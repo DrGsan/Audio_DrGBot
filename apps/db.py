@@ -164,7 +164,10 @@ def get_token(name, group):
 
 
 def get_groups():
-    return session.scalars(select(Groups.group_id)).all()
+    groups = []
+    for line in session.query(Groups.group_id, Groups.group_title).all():
+        groups.append(line)
+    return ''.join(str(groups))
 
 
 def get_total_audio(message):

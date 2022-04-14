@@ -75,6 +75,7 @@ def send_text_to_group(message):
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        bot.send_message(message.chat.id, get_groups())
         bot.register_next_step_handler(message, send_text_message)
 
 
@@ -92,7 +93,7 @@ def send_audio_to_group(message):
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-        bot.send_message(message.chat.id, db.get_groups_id('telegram_groups'))
+        bot.send_message(message.chat.id, get_groups())
         bot.register_next_step_handler(message, send_audio_message)
 
 

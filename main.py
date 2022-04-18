@@ -20,7 +20,7 @@ from apps.translate import Translate
 from apps.transliterate import Transliterate
 from apps.ya_disk import YandexDisk, ZipArchiver
 from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
-    update_is_left
+    update_is_left, disk_insert, disk_update
 
 from strings.main_strings import MainStrings
 
@@ -149,6 +149,11 @@ def some(message):
             time.sleep(5)
             os.remove(f'{folder}/{file}.zip')
 
+            if is_admin(message) is True:
+                disk_insert(message, file_name=f'{file}', delete_days=None)
+            else:
+                disk_insert(message, file_name=f'{file}')
+
             Apps().send_chat_action(bot, chat_id=message.chat.id, action='upload_document',
                                     sec=2)  # Уведомление Chat_Action
             doc = bot.send_document(message.chat.id, open(f'{folder}/{file}.txt', 'rb'))
@@ -205,9 +210,7 @@ def translate(message):
     while True:
         try:
             iam_file = temp_path + 'iam.txt'
-            if IAM_token(OAUTH_TOKEN).file_exist(iam_file) is True:
-                pass
-            else:
+            if IAM_token(OAUTH_TOKEN).file_exist(iam_file) is False:
                 IAM_token(OAUTH_TOKEN).create_token(iam_file)
             with open(iam_file, 'r') as f:
                 iam_token = f.read()

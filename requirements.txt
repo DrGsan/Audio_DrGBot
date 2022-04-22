@@ -1,4 +1,4 @@
-pyTelegramBotAPI==4.4.0
+pyTelegramBotAPI==4.4.1
 psycopg2-binary==2.9.3
 sqlalchemy==1.4.35
 requests==2.27.1

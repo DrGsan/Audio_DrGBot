@@ -4,6 +4,7 @@ import random
 import requests
 from datetime import datetime
 
+from apps.apps import Apps
 
 class YandexDisk:
     def __init__(self, api_token):
@@ -61,7 +62,7 @@ class YandexDisk:
 class ZipArchiver:
     def __init__(self, folder):
         self.folder = folder
-        self.name = str(PassGen().pass_gen(length=6, method=['digits']))
+        self.name = f"{Apps().current_date('%Y%m%d%H%M%S')}-{str(PassGen().pass_gen(length=6, method=['digits']))}"
         self.password = PassGen().pass_gen(length=25, method=['lowercase', 'uppercase', 'digits'])
 
     def move_to_archive(self):

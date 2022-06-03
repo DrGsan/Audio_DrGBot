@@ -154,10 +154,7 @@ def disk_command(message):
                     with open(f'{zip_folder}/{zip_name}.txt', 'w') as f:
                         f.write(f'Files:\n')
                         for file in os.listdir(zip_folder):
-                            print(file)
-                            time.sleep(1)
                             if file.startswith(zip_name):
-                                print('FOUND!!!')
                                 pass
                             else:
                                 os.remove(f'{zip_folder}/{file}')

@@ -9,7 +9,6 @@ class YandexDisk:
     def __init__(self, api_token):
         self.url = 'https://cloud-api.yandex.net/v1/disk/'
         self.headers = {'Authorization': f'OAuth {api_token}'}
-        self.delete_days = 10
 
     def upload_file(self, folder, file):
         params = {'path': f'disk:/{file}', 'overwrite': 'false'}
@@ -36,23 +35,8 @@ class YandexDisk:
             if line['name'] == file:
                 return line['public_url']
 
-    def auto_clean(self):
-        response = requests.get(self.url + 'resources/files', headers=self.headers).json()
-        if len(response['items']) == 0:
-            pass
-        else:
-            for line in response['items']:
-                file_name = line['name']
-                file_created = datetime.strptime(line['created'].split('T')[0], '%Y-%m-%d')
-                days_number = (datetime.now() - file_created).days
-                try:
-                    if days_number > self.delete_days:
-                        self.delete_file(file_name)
-                except KeyError:
-                    pass
-
-    def delete_file(self, file):  # file = 'disk:/599248'
-        params = {'path': f'{file}', 'permanently': 'true'}
+    def delete_file(self, file):
+        params = {'path': f'disk:/{file}', 'permanently': 'true'}
         response = requests.delete(self.url + 'resources', params=params, headers=self.headers)
         if response.status_code == 204:
             return True

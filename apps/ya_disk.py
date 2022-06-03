@@ -17,17 +17,17 @@ class YandexDisk:
         with open(f'{folder}/{file}.zip', 'rb') as f:
             requests.put(response.json()['href'], f)
         if response.status_code == 200:
-            return f'Архив "{file}" успешно выгружен в Яндекс диск.'
+            return True
         else:
-            return 'Что-то не так'
+            return False
 
     def publish_file(self, file):
         params = {'path': f'disk:/{file}'}
         response = requests.put(self.url + 'resources/publish', params=params, headers=self.headers)
         if response.status_code == 200:
-            return f'К архиву "{file}" успешно открыт доступ.'
+            return True
         else:
-            return 'Что-то не так'
+            return False
 
     def get_public_link(self, file):
         params = {'limit': 100000}
@@ -55,14 +55,27 @@ class YandexDisk:
         params = {'path': f'{file}', 'permanently': 'true'}
         response = requests.delete(self.url + 'resources', params=params, headers=self.headers)
         if response.status_code == 204:
-            return f'Архив "{file}" успешно удалён.'
+            return True
+        else:
+            return False
+
+    def create_folder(self, folder_name):
+        'https://cloud-api.yandex.net/v1/disk/resources'
+        params = {'path': f'disk:/{folder_name}'}
+        response = requests.put(self.url + 'resources', params=params, headers=self.headers)
+        if response.status_code == 201:
+            return True
+        elif response.status_code == 409:  # Если папка уже существует
+            return True
+        else:
+            return False
 
 
 class ZipArchiver:
-    def __init__(self, folder):
+    def __init__(self, folder, name, password):
         self.folder = folder
-        self.name = str(PassGen().pass_gen(length=6, method=['digits']))
-        self.password = PassGen().pass_gen(length=25, method=['lowercase', 'uppercase', 'digits'])
+        self.name = name
+        self.password = password
 
     def move_to_archive(self):
         try:
@@ -71,18 +84,8 @@ class ZipArchiver:
                 return False
         except FileNotFoundError:
             return False
-
         os.system(f'cd {self.folder} && zip -P {self.password} {self.name}.zip *')
-        with open(f'{self.folder}/{self.name}.txt', 'w') as f:
-            f.write(f'Password - {str(self.password)}\n\n')
-            for file in files:
-                if file.startswith('.'):
-                    pass
-                else:
-                    os.remove(f'{self.folder}/{file}')
-                    f.write(f'{str(file)}\n')
-            f.write('\nLink active for 10 days')
-        return f'{self.name}'
+        return True
 
 
 class PassGen:

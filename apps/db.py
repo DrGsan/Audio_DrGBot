@@ -58,14 +58,17 @@ class UserGroups(DeclarativeBase):
     last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
 
 
-# class Disk(DeclarativeBase):
-#     __tablename__ = 'telegram_disk'
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(BigInteger)
-#     file = Column(String)
-#     comment = Column(String)
-#     is_delete = Column(Boolean)
-#     date = Column(TIMESTAMP, server_default=func.now())
+class Disk(DeclarativeBase):
+    __tablename__ = 'telegram_disk'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger)
+    file_name = Column(String)
+    file_link = Column(String)
+    file_password = Column(String)
+    comment = Column(String)
+    delete_days = Column(Integer)
+    is_deleted = Column(Boolean)
+    date = Column(TIMESTAMP, server_default=func.now())
 
 
 # class Logs(DeclarativeBase):
@@ -79,6 +82,24 @@ class UserGroups(DeclarativeBase):
 #     message_text = Column(String)
 #     message_type = Column(String)
 #     date = Column(TIMESTAMP, server_default=func.now())
+
+
+# class Vpn(DeclarativeBase):
+#     __tablename__ = 'vpn'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(BigInteger)
+#     user_name = Column(String)
+#     login = Column(String)
+#     is_fin = Column(Boolean)
+#     is_sin = Column(Boolean)
+#     is_rus = Column(Boolean)
+#     is_ios = Column(Boolean)
+#     is_android = Column(Boolean)
+#     is_win = Column(Boolean)
+#     is_updated = Column(Boolean)
+#     is_blocked = Column(Boolean)
+#     date = Column(TIMESTAMP, server_default=func.now())
+#     last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
 
 
 def users_insert(message):  # Запись в таблицу Users
@@ -134,6 +155,27 @@ def user_groups_insert(message):  # Запись в таблицу UserGroups
 
 def user_groups_update(message):  # Обновление в таблице UserGroups
     session.execute(update(UserGroups)
+                    .where(UserGroups.user_id == message.from_user.id and
+                           UserGroups.group_id == message.chat.id)
+                    .values(is_left=False))
+    session.commit()
+
+
+def disk_insert(message, file_name, file_link, file_password, delete_days=10):  # Запись в таблицу Disk
+    line = Disk(
+        user_id=message.from_user.id,
+        file_name=file_name,
+        file_link=file_link,
+        file_password=file_password,
+        delete_days=delete_days,
+        is_deleted=False
+    )
+    session.add(line)
+    session.commit()
+
+
+def disk_update(message):  # Обновление в таблице Disk
+    session.execute(update(Disk)
                     .where(UserGroups.user_id == message.from_user.id and
                            UserGroups.group_id == message.chat.id)
                     .values(is_left=False))
@@ -210,3 +252,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    

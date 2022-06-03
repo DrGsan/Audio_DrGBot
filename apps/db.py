@@ -174,13 +174,6 @@ def disk_insert(message, file_name, file_link, file_password, delete_days=10):  
     session.commit()
 
 
-def disk_update(file_name, col, val):  # Обновление в таблице Disk
-    session.execute(update(Disk)
-                    .where(Disk.file_name == file_name)
-                    .values(col == val))
-    session.commit()
-
-
 def auto_clean_disk_files(YandexDisk, YA_DISK_TOKEN):
     for file_name in session.scalars(select(Disk.file_name).where(Disk.is_deleted == False)).all():
         is_deleted = session.scalars(select(Disk.is_deleted).where(Disk.file_name == file_name)).first()

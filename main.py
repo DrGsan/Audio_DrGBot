@@ -26,7 +26,7 @@ from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, g
 
 from strings.main_strings import MainStrings
 
-TOKEN = get_token('Tester_DrGBot_API', 'Telegram')
+TOKEN = get_token('Audio_DrGBot_API', 'Telegram')
 OAUTH_TOKEN = get_token('Oauth_Token', 'Yandex')
 FOLDER_ID = get_token('Folder_ID', 'Yandex')
 MY_ID = get_token('My_ID', 'Telegram')

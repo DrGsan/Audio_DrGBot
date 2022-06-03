@@ -1,8 +1,8 @@
 from sqlalchemy.sql import func
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import declarative_base, Session
-from sqlalchemy import select, update, create_engine, Column, String, Integer, BigInteger, DateTime, Boolean, TIMESTAMP, \
-    Date
+from sqlalchemy import select, update, create_engine, Column, String, Integer, BigInteger, DateTime, Boolean, \
+    TIMESTAMP, Date
 
 from config import DATABASE
 
@@ -174,12 +174,32 @@ def disk_insert(message, file_name, file_link, file_password, delete_days=10):  
     session.commit()
 
 
-def disk_update(message):  # Обновление в таблице Disk
+def disk_update(file_name, col, val):  # Обновление в таблице Disk
     session.execute(update(Disk)
-                    .where(UserGroups.user_id == message.from_user.id and
-                           UserGroups.group_id == message.chat.id)
-                    .values(is_left=False))
+                    .where(Disk.file_name == file_name)
+                    .values(col == val))
     session.commit()
+
+
+def auto_clean_disk_files(YandexDisk, YA_DISK_TOKEN):
+    for file_name in session.scalars(select(Disk.file_name).where(Disk.is_deleted == False)).all():
+        is_deleted = session.scalars(select(Disk.is_deleted).where(Disk.file_name == file_name)).first()
+        delete_days = session.scalars(select(Disk.delete_days).where(Disk.file_name == file_name)).first()
+        if is_deleted is True:
+            pass
+        else:
+            if delete_days == 0:
+                YandexDisk(YA_DISK_TOKEN).delete_file(file_name)
+                session.execute(update(Disk)
+                                .where(Disk.file_name == file_name)
+                                .values(is_deleted=True))
+                session.commit()
+                pass
+            else:
+                session.execute(update(Disk)
+                                .where(Disk.file_name == file_name)
+                                .values(delete_days=(delete_days - 1)))
+                session.commit()
 
 
 def work_with_db(message):  # Основная функция которая делает записи в DB
@@ -252,4 +272,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    

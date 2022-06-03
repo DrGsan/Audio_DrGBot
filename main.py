@@ -22,7 +22,7 @@ from apps.translate import Translate
 from apps.transliterate import Transliterate
 from apps.ya_disk import YandexDisk, ZipArchiver, PassGen
 from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
-    update_is_left, disk_insert, disk_update
+    update_is_left, disk_insert, auto_clean_disk_files
 
 from strings.main_strings import MainStrings
 
@@ -44,8 +44,8 @@ def new_year_msk_function():
         bot.send_message(chat_id, text)
 
 
-def ya_disk_func():
-    YandexDisk(YA_DISK_TOKEN).auto_clean()
+def clean_disk():
+    auto_clean_disk_files(YandexDisk, YA_DISK_TOKEN)
 
 
 def temp_clean():
@@ -169,11 +169,11 @@ def disk_command(message):
                     if is_admin(message) is True:
                         disk_insert(message, file_name=f'{zip_name}',
                                     file_link=zip_link, file_password=zip_password,
-                                    delete_days=30)
+                                    delete_days=10)
                     else:
                         disk_insert(message, file_name=f'{zip_name}',
                                     file_link=zip_link, file_password=zip_password,
-                                    delete_days=7)
+                                    delete_days=5)
 
                     Apps().send_chat_action(bot, chat_id=message.chat.id, action='upload_document',
                                             sec=2)  # Уведомление Chat_Action
@@ -185,11 +185,11 @@ def disk_command(message):
                     # bot.delete_message(message.chat.id, mes2.message_id)
                     bot.delete_message(message.chat.id, mes3.message_id)
                     time.sleep(60 * 4)
+                    bot.delete_message(message.chat.id, mes4.message_id)
                     mes5 = bot.send_message(message.chat.id, 'Осталась 1 минута')
                     time.sleep(60)
                     bot.delete_message(message.chat.id, mes5.message_id)
                     bot.delete_message(message.chat.id, doc.message_id)
-                    bot.delete_message(message.chat.id, mes4.message_id)
 
 
 @bot.message_handler(commands=['vpn'])  # VPN
@@ -429,8 +429,8 @@ if __name__ == '__main__':
         schedule.every().day.at('00:00').do(new_year_msk_function)
         Thread(target=schedule_checker).start()
 
-    schedule.every().day.at('01:00').do(ya_disk_func)
     schedule.every().day.at('01:00').do(temp_clean)
+    schedule.every().day.at('02:00').do(clean_disk)
     Thread(target=schedule_checker).start()
 
     bot.infinity_polling()

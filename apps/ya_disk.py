@@ -2,7 +2,6 @@ import os
 import string
 import random
 import requests
-from datetime import datetime
 
 
 class YandexDisk:
@@ -43,16 +42,16 @@ class YandexDisk:
         else:
             return False
 
-    def create_folder(self, folder_name):
-        'https://cloud-api.yandex.net/v1/disk/resources'
-        params = {'path': f'disk:/{folder_name}'}
-        response = requests.put(self.url + 'resources', params=params, headers=self.headers)
-        if response.status_code == 201:
-            return True
-        elif response.status_code == 409:  # Если папка уже существует
-            return True
-        else:
-            return False
+    # def create_folder(self, folder_name):
+    #     'https://cloud-api.yandex.net/v1/disk/resources'
+    #     params = {'path': f'disk:/{folder_name}'}
+    #     response = requests.put(self.url + 'resources', params=params, headers=self.headers)
+    #     if response.status_code == 201:
+    #         return True
+    #     elif response.status_code == 409:  # Если папка уже существует
+    #         return True
+    #     else:
+    #         return False
 
 
 class ZipArchiver:

@@ -58,27 +58,27 @@ class UserGroups(DeclarativeBase):
     last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
 
 
-class Disk(DeclarativeBase):
-    __tablename__ = 'telegram_disk'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(BigInteger)
-    file = Column(String)
-    comment = Column(String)
-    is_delete = Column(Boolean)
-    date = Column(TIMESTAMP, server_default=func.now())
+# class Disk(DeclarativeBase):
+#     __tablename__ = 'telegram_disk'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(BigInteger)
+#     file = Column(String)
+#     comment = Column(String)
+#     is_delete = Column(Boolean)
+#     date = Column(TIMESTAMP, server_default=func.now())
 
 
-class Logs(DeclarativeBase):
-    __tablename__ = 'telegram_logs'
-    id = Column(Integer, primary_key=True)
-    message_id = Column(BigInteger)
-    user_id = Column(BigInteger)
-    lang = Column(String)
-    group_id = Column(BigInteger)
-    group_type = Column(String)
-    message_text = Column(String)
-    message_type = Column(String)
-    date = Column(TIMESTAMP, server_default=func.now())
+# class Logs(DeclarativeBase):
+#     __tablename__ = 'telegram_logs'
+#     id = Column(Integer, primary_key=True)
+#     message_id = Column(BigInteger)
+#     user_id = Column(BigInteger)
+#     lang = Column(String)
+#     group_id = Column(BigInteger)
+#     group_type = Column(String)
+#     message_text = Column(String)
+#     message_type = Column(String)
+#     date = Column(TIMESTAMP, server_default=func.now())
 
 
 def users_insert(message):  # Запись в таблицу Users

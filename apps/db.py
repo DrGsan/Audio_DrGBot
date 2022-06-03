@@ -67,7 +67,7 @@ class Disk(DeclarativeBase):
     file_password = Column(String)
     comment = Column(String)
     delete_days = Column(Integer)
-    is_delete = Column(Boolean)
+    is_deleted = Column(Boolean)
     date = Column(TIMESTAMP, server_default=func.now())
 
 
@@ -87,6 +87,7 @@ class Logs(DeclarativeBase):
 class Vpn(DeclarativeBase):
     __tablename__ = 'vpn'
     id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger)
     user_name = Column(String)
     login = Column(String)
     is_fin = Column(Boolean)
@@ -99,7 +100,6 @@ class Vpn(DeclarativeBase):
     is_blocked = Column(Boolean)
     date = Column(TIMESTAMP, server_default=func.now())
     last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
-    pay_apr = Column(Integer)
 
 
 def users_insert(message):  # Запись в таблицу Users
@@ -161,12 +161,14 @@ def user_groups_update(message):  # Обновление в таблице UserG
     session.commit()
 
 
-def disk_insert(message, file_name, delete_days=10):  # Запись в таблицу Disk
+def disk_insert(message, file_name, file_link, file_password, delete_days=10):  # Запись в таблицу Disk
     line = Disk(
         user_id=message.from_user.id,
         file_name=file_name,
+        file_link=file_link,
+        file_password=file_password,
         delete_days=delete_days,
-        is_delete=False
+        is_deleted=False
     )
     session.add(line)
     session.commit()

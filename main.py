@@ -9,6 +9,8 @@ import shutil
 import telebot
 import requests
 import schedule
+# noinspection PyPackageRequirements
+from telebot import types
 from threading import Thread
 
 from apps.apps import Apps
@@ -18,7 +20,7 @@ from apps.weather import Weather
 from apps.currency import currency
 from apps.translate import Translate
 from apps.transliterate import Transliterate
-from apps.ya_disk import YandexDisk, ZipArchiver
+from apps.ya_disk import YandexDisk, ZipArchiver, PassGen
 from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
     update_is_left, disk_insert, disk_update
 
@@ -125,51 +127,85 @@ def send_audio_message(message):
 
 
 @bot.message_handler(commands=['disk'])
-def some(message):
+def disk_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
     if message.chat.type == 'private' and is_blocked(message) is False:
-        folder = f'temp/temp_disk_{message.chat.id}'
+        # folder_name = 'Telegram Upload'
+        # YandexDisk(YA_DISK_TOKEN).create_folder(folder_name)  # Создаёт папку
 
-        file = ZipArchiver(folder).move_to_archive()
-        if file is False:
+        zip_folder = f'temp/temp_disk_{message.from_user.id}'
+        zip_name = f"{Apps().current_date('%Y%m%d%H%M')}-{str(PassGen().pass_gen(length=6, method=['digits']))}"
+        zip_password = PassGen().pass_gen(length=25, method=['lowercase', 'uppercase', 'digits'])
+        zip_archive = ZipArchiver(folder=zip_folder, name=zip_name, password=zip_password).move_to_archive()
+        if zip_archive is False:
             Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
             bot.send_message(message.chat.id, 'Файлы не обнаружены')
         else:
             Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-            mes1 = bot.send_message(message.chat.id, f'Архив "{file}" успешно создан.')
+            mes1 = bot.send_message(message.chat.id, f'Архив создан.')
+            if YandexDisk(YA_DISK_TOKEN).upload_file(zip_folder, zip_name) is True:
+                Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+                mes2 = bot.send_message(message.chat.id, f'Архив выгружен в Облако.')
+                if YandexDisk(YA_DISK_TOKEN).publish_file(zip_name) is True:
+                    Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+                    mes3 = bot.send_message(message.chat.id, f'К архиву открыт доступ.')
 
-            Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-            mes2 = bot.send_message(message.chat.id, YandexDisk(YA_DISK_TOKEN).upload_file(folder, file))
-            Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-            mes3 = bot.send_message(message.chat.id, YandexDisk(YA_DISK_TOKEN).publish_file(file))
+                    zip_link = YandexDisk(YA_DISK_TOKEN).get_public_link(zip_name)
+                    with open(f'{zip_folder}/{zip_name}.txt', 'w') as f:
+                        f.write(f'Files:\n')
+                        for file in os.listdir(zip_folder):
+                            print(file)
+                            time.sleep(1)
+                            if file.startswith(zip_name):
+                                print('FOUND!!!')
+                                pass
+                            else:
+                                os.remove(f'{zip_folder}/{file}')
+                                f.write(f'{str(file)}\n')
+                        f.write('\nLink available for 10 days')
+                        f.write(f'\n{zip_link}')
+                        f.write(f'\nZip pass - {str(zip_password)}\n\n')
 
-            with open(f'{folder}/{file}.txt', 'a') as f:
-                f.write(f'\n{YandexDisk(YA_DISK_TOKEN).get_public_link(file)}')
+                    time.sleep(5)
+                    os.remove(f'{zip_folder}/{zip_name}.zip')
 
-            time.sleep(5)
-            os.remove(f'{folder}/{file}.zip')
+                    if is_admin(message) is True:
+                        disk_insert(message, file_name=f'{zip_name}',
+                                    file_link=zip_link, file_password=zip_password,
+                                    delete_days=30)
+                    else:
+                        disk_insert(message, file_name=f'{zip_name}',
+                                    file_link=zip_link, file_password=zip_password,
+                                    delete_days=7)
 
-            if is_admin(message) is True:
-                disk_insert(message, file_name=f'{file}', delete_days=None)
-            else:
-                disk_insert(message, file_name=f'{file}')
+                    Apps().send_chat_action(bot, chat_id=message.chat.id, action='upload_document',
+                                            sec=2)  # Уведомление Chat_Action
+                    doc = bot.send_document(message.chat.id, open(f'{zip_folder}/{zip_name}.txt', 'rb'))
+                    time.sleep(5)
+                    os.remove(f'{zip_folder}/{zip_name}.txt')
+                    mes4 = bot.send_message(message.chat.id, 'У Вас есть 5 минут на скачивание txt файла')
+                    bot.delete_message(message.chat.id, mes1.message_id)
+                    # bot.delete_message(message.chat.id, mes2.message_id)
+                    bot.delete_message(message.chat.id, mes3.message_id)
+                    time.sleep(60 * 4)
+                    mes5 = bot.send_message(message.chat.id, 'Осталась 1 минута')
+                    time.sleep(60)
+                    bot.delete_message(message.chat.id, mes5.message_id)
+                    bot.delete_message(message.chat.id, doc.message_id)
+                    bot.delete_message(message.chat.id, mes4.message_id)
 
-            Apps().send_chat_action(bot, chat_id=message.chat.id, action='upload_document',
-                                    sec=2)  # Уведомление Chat_Action
-            doc = bot.send_document(message.chat.id, open(f'{folder}/{file}.txt', 'rb'))
-            time.sleep(5)
-            os.remove(f'{folder}/{file}.txt')
-            mes4 = bot.send_message(message.chat.id, 'У Вас есть 5 минут на скачивание txt файла с ссылкой на архив ')
-            time.sleep(10)
-            bot.delete_message(message.chat.id, mes1.message_id)
-            bot.delete_message(message.chat.id, mes2.message_id)
-            bot.delete_message(message.chat.id, mes3.message_id)
-            time.sleep(60 * 4)
-            mes5 = bot.send_message(message.chat.id, 'Осталась 1 минута')
-            time.sleep(50)
-            bot.delete_message(message.chat.id, mes5.message_id)
-            bot.delete_message(message.chat.id, doc.message_id)
-            bot.delete_message(message.chat.id, mes4.message_id)
+
+@bot.message_handler(commands=['vpn'])  # VPN
+def vpn_command(message):
+    if message.chat.type == 'private' and is_admin(message) is True:
+        print(123)
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        button_1 = types.KeyboardButton('ZAPOMNI')
+        button_2 = types.KeyboardButton('NAPOMNI')
+        button_3 = types.KeyboardButton('IZMENI')
+
+        markup.add(button_1, button_2, button_3)
+        return markup
 
 
 @bot.message_handler(commands=['currency'])  # Курс Валют
@@ -343,11 +379,9 @@ def handler_content_types(message):
                 file = requests.get(f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}')
                 with open(file_name, 'wb') as f:
                     f.write(file.content)
-                mes = bot.send_message(message.chat.id, f'Файл "{message.document.file_name}" успешно загружен.')
+                bot.send_message(message.chat.id, f'Файл "{message.document.file_name}" выгружен.')
                 time.sleep(5)
                 bot.delete_message(message.chat.id, message.message_id)
-                time.sleep(5)
-                bot.delete_message(message.chat.id, mes.message_id)
             else:
                 bot.send_message(message.chat.id,
                                  f'ОШИБКА API "{message.document.file_name}" > 20mb')

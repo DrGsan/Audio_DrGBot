@@ -84,22 +84,22 @@ class Disk(DeclarativeBase):
 #     date = Column(TIMESTAMP, server_default=func.now())
 
 
-class Vpn(DeclarativeBase):
-    __tablename__ = 'vpn'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(BigInteger)
-    user_name = Column(String)
-    login = Column(String)
-    is_fin = Column(Boolean)
-    is_sin = Column(Boolean)
-    is_rus = Column(Boolean)
-    is_ios = Column(Boolean)
-    is_android = Column(Boolean)
-    is_win = Column(Boolean)
-    is_updated = Column(Boolean)
-    is_blocked = Column(Boolean)
-    date = Column(TIMESTAMP, server_default=func.now())
-    last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+# class Vpn(DeclarativeBase):
+#     __tablename__ = 'vpn'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(BigInteger)
+#     user_name = Column(String)
+#     login = Column(String)
+#     is_fin = Column(Boolean)
+#     is_sin = Column(Boolean)
+#     is_rus = Column(Boolean)
+#     is_ios = Column(Boolean)
+#     is_android = Column(Boolean)
+#     is_win = Column(Boolean)
+#     is_updated = Column(Boolean)
+#     is_blocked = Column(Boolean)
+#     date = Column(TIMESTAMP, server_default=func.now())
+#     last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
 
 
 def users_insert(message):  # Запись в таблицу Users

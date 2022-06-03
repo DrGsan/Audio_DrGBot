@@ -26,7 +26,7 @@ from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, g
 
 from strings.main_strings import MainStrings
 
-TOKEN = get_token('Audio_DrGBot_API', 'Telegram')
+TOKEN = get_token('Audio_DrGBot_API', 'Telegram')  # os.environ['TOKEN']
 OAUTH_TOKEN = get_token('Oauth_Token', 'Yandex')
 FOLDER_ID = get_token('Folder_ID', 'Yandex')
 MY_ID = get_token('My_ID', 'Telegram')
@@ -130,9 +130,6 @@ def send_audio_message(message):
 def disk_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
     if message.chat.type == 'private' and is_blocked(message) is False:
-        # folder_name = 'Telegram Upload'
-        # YandexDisk(YA_DISK_TOKEN).create_folder(folder_name)  # Создаёт папку
-
         zip_folder = f'temp/temp_disk_{message.from_user.id}'
         zip_name = f"{Apps().current_date('%Y%m%d%H%M')}-{str(PassGen().pass_gen(length=6, method=['digits']))}"
         zip_password = PassGen().pass_gen(length=25, method=['lowercase', 'uppercase', 'digits'])

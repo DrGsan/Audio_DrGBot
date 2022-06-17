@@ -71,17 +71,17 @@ class Disk(DeclarativeBase):
     date = Column(TIMESTAMP, server_default=func.now())
 
 
-# class Logs(DeclarativeBase):
-#     __tablename__ = 'telegram_logs'
-#     id = Column(Integer, primary_key=True)
-#     message_id = Column(BigInteger)
-#     user_id = Column(BigInteger)
-#     lang = Column(String)
-#     group_id = Column(BigInteger)
-#     group_type = Column(String)
-#     message_text = Column(String)
-#     message_type = Column(String)
-#     date = Column(TIMESTAMP, server_default=func.now())
+class Logs(DeclarativeBase):
+    __tablename__ = 'telegram_logs'
+    id = Column(Integer, primary_key=True)
+    message_id = Column(BigInteger)
+    user_id = Column(BigInteger)
+    lang = Column(String)
+    group_id = Column(BigInteger)
+    group_type = Column(String)
+    message_text = Column(String)
+    message_type = Column(String)
+    date = Column(TIMESTAMP, server_default=func.now())
 
 
 # class Vpn(DeclarativeBase):
@@ -174,8 +174,22 @@ def disk_insert(message, file_name, file_link, file_password, delete_days=10):  
     session.commit()
 
 
+def log_insert(message):  # Запись в таблицу Logs
+    line = Logs(
+        message_id=message.message_id,
+        user_id=message.json['from']['id'],
+        lang=message.json['from']['language_code'],
+        group_id=message.json['chat']['id'],
+        group_type=message.json['chat']['type'],
+        message_text=message.json['text'],
+        message_type=message.content_type
+    )
+    session.add(line)
+    session.commit()
+
+
 def auto_clean_disk_files(YandexDisk, YA_DISK_TOKEN):
-    for file_name in session.scalars(select(Disk.file_name).where(Disk.is_deleted == False)).all():
+    for file_name in session.scalars(select(Disk.file_name).where(Disk.is_deleted is False)).all():
         is_deleted = session.scalars(select(Disk.is_deleted).where(Disk.file_name == file_name)).first()
         delete_days = session.scalars(select(Disk.delete_days).where(Disk.file_name == file_name)).first()
         if is_deleted is True:

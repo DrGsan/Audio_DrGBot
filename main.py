@@ -26,7 +26,7 @@ from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, g
 
 from strings.main_strings import MainStrings
 
-TOKEN = get_token('Audio_DrGBot_API', 'Telegram')  # os.environ['TOKEN']
+TOKEN = os.environ['TOKEN']
 OAUTH_TOKEN = get_token('Oauth_Token', 'Yandex')
 FOLDER_ID = get_token('Folder_ID', 'Yandex')
 MY_ID = get_token('My_ID', 'Telegram')
@@ -356,6 +356,7 @@ def handler_content_types(message):
         elif message.content_type == 'new_chat_photo':
             Apps().echo_voice(bot, message, 'avatar')  # Отправляет случайное сообщение из avatar.txt
         elif message.content_type == 'text':
+            log_insert(message)  # Запись логов в DB
             if message.reply_to_message is not None and message.reply_to_message.from_user.id == int(
                     TOKEN.split(':')[0]):
                 Apps().send_notification(bot, message, chat_id=MY_ID, action='reply_message')

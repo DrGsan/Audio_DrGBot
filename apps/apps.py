@@ -20,7 +20,7 @@ class Apps:
             os.mkdir(directory)
 
     def send_chat_action(self, bot, chat_id, action='typing', sec=1, text=None):  # Уведомление Chat_Action
-        bot.send_chat_action(chat_id, action)  # type = typing/choose_sticker/record_audio/upload_document/...
+        bot.send_chat_action(chat_id, action)  # action typing/choose_sticker/record_audio/upload_document/upload_photo
         if text is not None:
             if len(text) < 15:
                 sec = 1

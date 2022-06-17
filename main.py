@@ -22,7 +22,7 @@ from apps.translate import Translate
 from apps.transliterate import Transliterate
 from apps.ya_disk import YandexDisk, ZipArchiver, PassGen
 from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
-    update_is_left, disk_insert, auto_clean_disk_files
+    update_is_left, disk_insert, auto_clean_disk_files, log_insert
 
 from strings.main_strings import MainStrings
 

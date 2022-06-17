@@ -77,13 +77,13 @@ echo.
 echo Enter the IP address (or DNS name) of the VPN server.
 echo Note: This must exactly match the VPN server address in the output
 echo of the IKEv2 helper script on your server.
-set server_addr=45.9.72.147
+set server_addr=194.36.178.39
 set /p server_addr="VPN server address: "
 if not defined server_addr goto :Abort
 set "server_addr=%server_addr:"=%"
 set "server_addr=%server_addr: =%"
 
-set "conn_name_gen=DrG VPN Fin»
+set "conn_name_gen=DrG VPN SIN»
 powershell -command "Get-VpnConnection -Name '%conn_name_gen%'" >nul 2>&1
 if !errorlevel! neq 0 (
   goto :Enter_Conn_Name

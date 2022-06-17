@@ -15,6 +15,7 @@ from threading import Thread
 
 from apps.apps import Apps
 from apps.iam import IAM_token
+from apps.vpn import VPN
 from apps.speech import Speech
 from apps.weather import Weather
 from apps.currency import currency
@@ -22,9 +23,11 @@ from apps.translate import Translate
 from apps.transliterate import Transliterate
 from apps.ya_disk import YandexDisk, ZipArchiver, PassGen
 from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
-    update_is_left, disk_insert, auto_clean_disk_files, log_insert
+    update_is_left, disk_insert, auto_clean_disk_files, log_insert, is_vpn_blocked, get_vpn_setup, get_vpn_login
 
 from strings.main_strings import MainStrings
+
+from config import *
 
 TOKEN = get_token('Audio_DrGBot_API', 'Telegram')  # os.environ['TOKEN']
 OAUTH_TOKEN = get_token('Oauth_Token', 'Yandex')
@@ -200,6 +203,83 @@ def vpn_command(message):
 
         markup.add(button_1, button_2, button_3)
         return markup
+
+
+@bot.message_handler(commands=['get_vpn'])  # VPN
+def get_vpn_command(message):
+    region_dict = {'fb-us': 'USA', 'fb-fin': 'Finland', 'fb-sin': 'Singapore', 'fb-ru': 'Mother-Russia'}
+    platform_dict = {'iOS/Mac': 'mobileconfig', 'Android': 'sswan', 'Windows': 'p12'}
+    if message.chat.type == 'private' and is_vpn_blocked(message) is False:
+        setup = get_vpn_setup(message)
+        region = setup.split(' | ')[0].split(', ')
+        platform = setup.split(' | ')[1].split(', ')
+
+        Apps().send_chat_action(bot, chat_id=message.chat.id, sec=2)  # Уведомление Chat_Action
+        region_str = ''
+        for r in region:
+            if region_str == '':
+                region_str = region_dict[r]
+            else:
+                region_str = f'{region_str}, {region_dict[r]}'
+        platform_str = ''
+        for p in platform:
+            if platform_str == '':
+                platform_str = p
+            else:
+                platform_str = f'{platform_str}, {p}'
+
+        mes1 = bot.send_message(message.chat.id,
+                                f'{message.from_user.first_name}, Вам доступны следующие сервера:\n '
+                                f'{region_str}\n\n и следующие OS:\n{platform_str}')
+        Apps().send_chat_action(bot, chat_id=message.chat.id, sec=2)  # Уведомление Chat_Action
+        mes2 = bot.send_message(message.chat.id, 'Конфиги собираются и через некоторое время будут Вам отправлены.')
+
+        Apps().make_folder('temp/')
+        temp_path = f'temp/temp_vpn_{message.from_user.id}'
+        Apps().make_folder(temp_path)
+
+        for r in region:
+            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).copy_sert(get_vpn_login(message))
+
+        bot.delete_message(message.chat.id, mes1.message_id)
+        bot.delete_message(message.chat.id, mes2.message_id)
+
+        with open('data/vpn_files/Fun.jpg', 'rb') as image:
+            Apps().send_chat_action(bot, chat_id=message.chat.id,
+                                    action='upload_photo', sec=2)  # Уведомление Chat_Action
+            img = bot.send_photo(message.chat.id, image)
+        with open('data/vpn_files/ReadMe.txt', 'rb') as manual:
+            Apps().send_chat_action(bot, chat_id=message.chat.id,
+                                    action='upload_document', sec=2)  # Уведомление Chat_Action
+            mes3 = bot.send_document(message.chat.id, manual)
+        mes_id_list = []
+        for file in os.listdir(temp_path):
+            for p in platform:
+                if platform_dict[p] == file.split('.')[1]:
+                    with open(f'{temp_path}/{file}', 'rb') as config:
+                        Apps().send_chat_action(bot, chat_id=message.chat.id,
+                                                action='upload_document', sec=2)  # Уведомление Chat_Action
+                        mes = bot.send_document(message.chat.id, config)
+                        mes_id_list.append(mes.message_id)
+        for p in platform:
+            if p == 'Windows':
+                for r in region:
+                    with open(f'data/vpn_files/ikev2_config_import_{r.split("fb-")[1]}.cmd', 'rb') as manual:
+                        Apps().send_chat_action(bot, chat_id=message.chat.id,
+                                                action='upload_document', sec=2)  # Уведомление Chat_Action
+                        mes = bot.send_document(message.chat.id, manual)
+                        mes_id_list.append(mes.message_id)
+
+        delete_time = 10
+        mes4 = bot.send_message(message.chat.id, f'У Вас {delete_time} минут на скачивание.')
+
+        time.sleep(delete_time * 60)
+        for inf_mes in mes_id_list:
+            time.sleep(1)
+            bot.delete_message(message.chat.id, inf_mes)
+        bot.delete_message(message.chat.id, mes3.message_id)
+        bot.delete_message(message.chat.id, mes4.message_id)
+        bot.delete_message(message.chat.id, img.message_id)
 
 
 @bot.message_handler(commands=['currency'])  # Курс Валют

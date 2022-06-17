@@ -84,22 +84,16 @@ class Logs(DeclarativeBase):
     date = Column(TIMESTAMP, server_default=func.now())
 
 
-# class Vpn(DeclarativeBase):
-#     __tablename__ = 'vpn'
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(BigInteger)
-#     user_name = Column(String)
-#     login = Column(String)
-#     is_fin = Column(Boolean)
-#     is_sin = Column(Boolean)
-#     is_rus = Column(Boolean)
-#     is_ios = Column(Boolean)
-#     is_android = Column(Boolean)
-#     is_win = Column(Boolean)
-#     is_updated = Column(Boolean)
-#     is_blocked = Column(Boolean)
-#     date = Column(TIMESTAMP, server_default=func.now())
-#     last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+class Vpn(DeclarativeBase):
+    __tablename__ = 'vpn'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(BigInteger)
+    vpn_login = Column(String)
+    vpn_setup = Column(String)
+    is_blocked = Column(Boolean)
+    comment = Column(String)
+    date = Column(TIMESTAMP, server_default=func.now())
+    last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
 
 
 def users_insert(message):  # Запись в таблицу Users
@@ -271,6 +265,18 @@ def is_admin(message):
 
 def is_blocked(message):
     return session.scalars(select(Users.is_blocked).where(Users.user_id == message.from_user.id)).first()
+
+
+def is_vpn_blocked(message):
+    return session.scalars(select(Vpn.is_blocked).where(Vpn.user_id == message.from_user.id)).first()
+
+
+def get_vpn_login(message):
+    return session.scalars(select(Vpn.vpn_login).where(Vpn.user_id == message.from_user.id)).first()
+
+
+def get_vpn_setup(message):
+    return session.scalars(select(Vpn.vpn_setup).where(Vpn.user_id == message.from_user.id)).first()
 
 
 def main():

@@ -207,7 +207,8 @@ def vpn_command(message):
 
 @bot.message_handler(commands=['get_vpn'])  # VPN
 def get_vpn_command(message):
-    region_dict = {'fb-us': 'USA', 'fb-fin2': 'Finland', 'fb-ru': 'Mother-Russia', 'fb-sin': 'Singapore'}
+    region_dict = {'fb-us': 'USA', 'fb-fin': 'Finland', 'fb-fin2': 'Finland2', 'fb-ru': 'Mother-Russia',
+                   'fb-sin': 'Singapore'}
     platform_dict = {'iOS/Mac': 'mobileconfig', 'Android': 'sswan', 'Windows': 'p12'}
     if message.chat.type == 'private' and is_vpn_blocked(message) is False:
         setup = get_vpn_setup(message)
@@ -239,7 +240,9 @@ def get_vpn_command(message):
         Apps().make_folder(temp_path)
 
         for r in region:
+            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).add_vpn_user(get_vpn_login(message))
             VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).copy_sert(get_vpn_login(message))
+            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).delete_sert_files(get_vpn_login(message))
 
         bot.delete_message(message.chat.id, mes1.message_id)
         bot.delete_message(message.chat.id, mes2.message_id)

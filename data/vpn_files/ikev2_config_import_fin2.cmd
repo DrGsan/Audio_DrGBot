@@ -83,7 +83,7 @@ if not defined server_addr goto :Abort
 set "server_addr=%server_addr:"=%"
 set "server_addr=%server_addr: =%"
 
-set "conn_name_gen=DrG VPN FIN»
+set "conn_name_gen=DrG VPN FIN2»
 powershell -command "Get-VpnConnection -Name '%conn_name_gen%'" >nul 2>&1
 if !errorlevel! neq 0 (
   goto :Enter_Conn_Name

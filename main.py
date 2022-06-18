@@ -294,8 +294,8 @@ def get_vpn_command(message):
                         mes = bot.send_document(message.chat.id, manual)
                         mes_id_list.append(mes.message_id)
 
-        delete_time = 10
-        mes4 = bot.send_message(message.chat.id, f'У Вас {delete_time} минут на скачивание.')
+        delete_time = 2
+        mes4 = bot.send_message(message.chat.id, f'У Вас {delete_time} минуты на скачивание.')
 
         time.sleep(delete_time * 60)
         for inf_mes in mes_id_list:

@@ -20,7 +20,7 @@ class Config(DeclarativeBase):
     expired_date = Column(DateTime)
     comment = Column(String)
     date = Column(TIMESTAMP, server_default=func.now())
-    last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+    last_update = Column(TIMESTAMP, server_default=func.now(), server_onupdate=func.current_timestamp())
 
 
 class Users(DeclarativeBase):
@@ -35,7 +35,7 @@ class Users(DeclarativeBase):
     total_audio = Column(Integer)
     birth_date = Column(Date)
     date = Column(TIMESTAMP, server_default=func.now())
-    last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+    last_update = Column(TIMESTAMP, server_default=func.now(), server_onupdate=func.current_timestamp())
 
 
 class Groups(DeclarativeBase):
@@ -45,7 +45,7 @@ class Groups(DeclarativeBase):
     group_title = Column(String)
     total_users = Column(Integer)
     date = Column(TIMESTAMP, server_default=func.now())
-    last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+    last_update = Column(TIMESTAMP, server_default=func.now(), server_onupdate=func.current_timestamp())
 
 
 class UserGroups(DeclarativeBase):
@@ -55,7 +55,7 @@ class UserGroups(DeclarativeBase):
     is_left = Column(Boolean)
     group_id = Column(BigInteger)
     date = Column(TIMESTAMP, server_default=func.now())
-    last_update = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+    last_update = Column(TIMESTAMP, server_default=func.now(), server_onupdate=func.current_timestamp())
 
 
 class Disk(DeclarativeBase):

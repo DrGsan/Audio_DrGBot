@@ -279,6 +279,10 @@ def get_vpn_setup(message):
     return session.scalars(select(Vpn.vpn_setup).where(Vpn.user_id == message.from_user.id)).first()
 
 
+def get_balance(message):
+    return session.scalars(select(Users.total_audio).where(Users.user_id == message.from_user.id)).first()
+
+
 def main():
     pass
 

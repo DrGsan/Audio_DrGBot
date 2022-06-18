@@ -23,7 +23,8 @@ from apps.translate import Translate
 from apps.transliterate import Transliterate
 from apps.ya_disk import YandexDisk, ZipArchiver, PassGen
 from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
-    update_is_left, disk_insert, auto_clean_disk_files, log_insert, is_vpn_blocked, get_vpn_setup, get_vpn_login
+    update_is_left, disk_insert, auto_clean_disk_files, log_insert, is_vpn_blocked, get_vpn_setup, get_vpn_login, \
+    get_balance
 
 from strings.main_strings import MainStrings
 
@@ -71,6 +72,39 @@ def start_message(message):
     if message.chat.type == 'private' and is_blocked(message) is False:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, f'Приветствую, {message.from_user.first_name}')
+
+
+@bot.message_handler(commands=['admin'])
+def get_admin_command(message):
+    work_with_db(message)  # Основная функция которая делает записи в DB
+    if message.chat.type == 'private' and is_admin(message) is True:
+        Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        bot.send_message(message.chat.id, f'{message.from_user.first_name}, вот список доступных Вам команд:\n'
+                                          f'/send_text - Отправить текстовое сообщение в группу.\n'
+                                          f'/send_voice - Отправить аудио сообщение в группу.\n'
+                                          f'/get_vpn - Получить сертификаты IKEv2 для доступа к VPN.')
+
+
+@bot.message_handler(commands=['balance'])
+def get_balance_command(message):
+    work_with_db(message)  # Основная функция которая делает записи в DB
+    if is_blocked(message) is True:
+        Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        bot.send_message(message.chat.id, f'{message.from_user.first_name}, Вы в чёрном списке и Вам не доступны '
+                                          f'основные функции бота.')
+    else:
+        if is_admin(message) is True:
+            Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+            bot.send_message(message.chat.id, f'Хозяин, {message.from_user.first_name}, Вы админ бота, Вам можно всё.')
+        else:
+            if get_balance(message) is None:
+                Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+                bot.send_message(message.chat.id, f'{message.from_user.first_name}, у Вас нет баланса, т.к. вы '
+                                                  f'ещё не отправляли аудио сообщения.')
+            else:
+                Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+                bot.send_message(message.chat.id, f'{message.from_user.first_name}, у Вас осталось '
+                                                  f'{get_balance(message)} секунд.')
 
 
 @bot.message_handler(commands=['send_text'])  # Отправка текстовых сообщений в определённый чат
@@ -190,19 +224,6 @@ def disk_command(message):
                     time.sleep(60)
                     bot.delete_message(message.chat.id, mes5.message_id)
                     bot.delete_message(message.chat.id, doc.message_id)
-
-
-@bot.message_handler(commands=['vpn'])  # VPN
-def vpn_command(message):
-    if message.chat.type == 'private' and is_admin(message) is True:
-        print(123)
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        button_1 = types.KeyboardButton('ZAPOMNI')
-        button_2 = types.KeyboardButton('NAPOMNI')
-        button_3 = types.KeyboardButton('IZMENI')
-
-        markup.add(button_1, button_2, button_3)
-        return markup
 
 
 @bot.message_handler(commands=['get_vpn'])  # VPN

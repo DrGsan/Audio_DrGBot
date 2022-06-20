@@ -252,9 +252,8 @@ def get_vpn_command(message):
 
         mes1 = bot.send_message(message.chat.id,
                                 f'{message.from_user.first_name}, Вам доступны следующие сервера:\n '
-                                f'{region_str}\n\n и следующие OS:\n{platform_str}')
-        Apps().send_chat_action(bot, chat_id=message.chat.id, sec=2)  # Уведомление Chat_Action
-        mes2 = bot.send_message(message.chat.id, 'Конфиги собираются и через некоторое время будут Вам отправлены.')
+                                f'{region_str}\n\n и следующие OS:\n{platform_str}\n\n'
+                                f'Конфиги собираются и через некоторое время будут Вам отправлены (до 5 минут).')
 
         Apps().make_folder('temp/')
         temp_path = f'temp/temp_vpn_{message.from_user.id}'
@@ -266,7 +265,6 @@ def get_vpn_command(message):
             VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).delete_sert_files(get_vpn_login(message))
 
         bot.delete_message(message.chat.id, mes1.message_id)
-        bot.delete_message(message.chat.id, mes2.message_id)
 
         with open('data/vpn_files/Fun.jpg', 'rb') as image:
             Apps().send_chat_action(bot, chat_id=message.chat.id,
@@ -275,7 +273,7 @@ def get_vpn_command(message):
         with open('data/vpn_files/ReadMe.txt', 'rb') as manual:
             Apps().send_chat_action(bot, chat_id=message.chat.id,
                                     action='upload_document', sec=2)  # Уведомление Chat_Action
-            mes3 = bot.send_document(message.chat.id, manual)
+            mes2 = bot.send_document(message.chat.id, manual, disable_notification=True)
         mes_id_list = []
         for file in os.listdir(temp_path):
             for p in platform:
@@ -291,17 +289,17 @@ def get_vpn_command(message):
                     with open(f'data/vpn_files/ikev2_config_import_{r.split("fb-")[1]}.cmd', 'rb') as manual:
                         Apps().send_chat_action(bot, chat_id=message.chat.id,
                                                 action='upload_document', sec=2)  # Уведомление Chat_Action
-                        mes = bot.send_document(message.chat.id, manual)
-                        mes_id_list.append(mes.message_id)
+                        mes3 = bot.send_document(message.chat.id, manual)
+                        mes_id_list.append(mes3.message_id)
 
-        delete_time = 2
+        delete_time = 5
         mes4 = bot.send_message(message.chat.id, f'У Вас {delete_time} минуты на скачивание.')
 
         time.sleep(delete_time * 60)
         for inf_mes in mes_id_list:
             time.sleep(1)
             bot.delete_message(message.chat.id, inf_mes)
-        bot.delete_message(message.chat.id, mes3.message_id)
+        bot.delete_message(message.chat.id, mes2.message_id)
         bot.delete_message(message.chat.id, mes4.message_id)
         bot.delete_message(message.chat.id, img.message_id)
 

@@ -270,7 +270,7 @@ def get_vpn_command(message):
             Apps().send_chat_action(bot, chat_id=message.chat.id,
                                     action='upload_photo', sec=2)  # Уведомление Chat_Action
             img = bot.send_photo(message.chat.id, image)
-        with open('data/vpn_files/ReadMe.txt', 'rb') as manual:
+        with open('data/vpn_files/ReadMe.md', 'rb') as manual:
             Apps().send_chat_action(bot, chat_id=message.chat.id,
                                     action='upload_document', sec=2)  # Уведомление Chat_Action
             mes2 = bot.send_document(message.chat.id, manual, disable_notification=True)

@@ -253,7 +253,7 @@ def get_vpn_command(message):
         mes1 = bot.send_message(message.chat.id,
                                 f'{message.from_user.first_name}, Вам доступны следующие сервера:\n '
                                 f'{region_str}\n\n и следующие OS:\n{platform_str}\n\n'
-                                f'Конфиги собираются и через некоторое время будут Вам отправлены (до 5 минут).')
+                                f'Сертификаты собираются и через некоторое время будут Вам отправлены (до 5 минут).')
 
         Apps().make_folder('temp/')
         temp_path = f'temp/temp_vpn_{message.from_user.id}'

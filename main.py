@@ -24,7 +24,7 @@ from apps.transliterate import Transliterate
 from apps.ya_disk import YandexDisk, ZipArchiver, PassGen
 from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
     update_is_left, disk_insert, auto_clean_disk_files, log_insert, is_vpn_blocked, get_vpn_setup, get_vpn_login, \
-    get_balance
+    get_balance, vpn_insert, is_vpn_user_exist
 
 from strings.main_strings import MainStrings
 
@@ -249,6 +249,9 @@ def get_vpn_command(message):
     region_dict = {'fb-us': 'USA', 'fb-fin': 'Finland', 'fb-fin2': 'Finland2', 'fb-ru': 'Mother-Russia',
                    'fb-sin': 'Singapore'}
     platform_dict = {'iOS/Mac': 'mobileconfig', 'Android': 'sswan', 'Windows': 'p12'}
+
+    if message.chat.type == 'private' and is_vpn_user_exist(message) is False:
+        vpn_insert(message)
     if message.chat.type == 'private' and is_vpn_blocked(message) is False:
         setup = get_vpn_setup(message)
         region = setup.split(' | ')[0].split(', ')

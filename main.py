@@ -251,6 +251,7 @@ def get_vpn_command(message):
 
     if message.chat.type == 'private' and is_vpn_user_exist(message) is False:
         vpn_insert(message)
+        Apps().send_notification(bot, message, chat_id=MY_ID, action='new_vpn_user')
     if message.chat.type == 'private' and is_vpn_blocked(message) is False:
         setup = get_vpn_setup(message)
         region = setup.split(' | ')[0].split(', ')

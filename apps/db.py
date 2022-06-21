@@ -12,7 +12,7 @@ session = Session(engine)
 
 
 class Config(DeclarativeBase):
-    __tablename__ = 'telegram_config'
+    __tablename__ = 'config'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     group = Column(String)
@@ -24,7 +24,7 @@ class Config(DeclarativeBase):
 
 
 class Users(DeclarativeBase):
-    __tablename__ = 'telegram_users'
+    __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger)
     first_name = Column(String)
@@ -39,7 +39,7 @@ class Users(DeclarativeBase):
 
 
 class Groups(DeclarativeBase):
-    __tablename__ = 'telegram_groups'
+    __tablename__ = 'groups'
     id = Column(Integer, primary_key=True)
     group_id = Column(BigInteger)
     group_title = Column(String)
@@ -49,7 +49,7 @@ class Groups(DeclarativeBase):
 
 
 class UserGroups(DeclarativeBase):
-    __tablename__ = 'telegram_user_groups'
+    __tablename__ = 'user_groups'
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger)
     is_left = Column(Boolean)
@@ -59,7 +59,7 @@ class UserGroups(DeclarativeBase):
 
 
 class Disk(DeclarativeBase):
-    __tablename__ = 'telegram_disk'
+    __tablename__ = 'disk'
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger)
     file_name = Column(String)
@@ -72,7 +72,7 @@ class Disk(DeclarativeBase):
 
 
 class Logs(DeclarativeBase):
-    __tablename__ = 'telegram_logs'
+    __tablename__ = 'logs'
     id = Column(Integer, primary_key=True)
     message_id = Column(BigInteger)
     user_id = Column(BigInteger)
@@ -191,7 +191,8 @@ def vpn_insert(message):  # Запись в таблицу Vpn
         user_id=message.from_user.id,
         vpn_login=vpn_login,
         vpn_setup='fb-fin | iOS/Mac, Android',
-        is_blocked=False
+        is_blocked=False,
+        comment='NEW'
     )
     session.add(line)
     session.commit()

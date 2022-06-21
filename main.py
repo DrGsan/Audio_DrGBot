@@ -74,6 +74,24 @@ def start_message(message):
         bot.send_message(message.chat.id, f'Приветствую, {message.from_user.first_name}')
 
 
+# @bot.message_handler(commands=['number'])  # Объявили ветку для работы по команде <strong>number</strong>
+# def phone(message):
+#     keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)  # Подключаем клавиатуру
+#     button_phone = types.KeyboardButton(text="Отправить телефон",
+#                                         request_contact=True)  # Указываем название кнопки, которая появится у пользователя
+#     keyboard.add(button_phone)  # Добавляем эту кнопку
+#     bot.send_message(message.chat.id, 'Номер телефона',
+#                      reply_markup=keyboard)  # Дублируем сообщением о том, что пользователь сейчас отправит боту свой номер телефона (на всякий случай, но это не обязательно)
+#
+#
+# @bot.message_handler(content_types=[
+#     'contact'])  # Объявили ветку, в которой прописываем логику на тот случай, если пользователь решит прислать номер телефона :)
+# def contact(message):
+#     if message.contact is not None:  # Если присланный объект <strong>contact</strong> не равен нулю
+#         print(
+#             message.contact)  # Выводим у себя в панели контактные данные. А вообщем можно их, например, сохранить или сделать что-то еще.
+
+
 @bot.message_handler(commands=['admin'])
 def get_admin_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB

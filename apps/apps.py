@@ -36,7 +36,7 @@ class Apps:
                 sec = 5
         time.sleep(sec)
 
-    def send_notification(self, bot, message, chat_id, action):  # type = reply_message/new_user/new_group/no_time
+    def send_notification(self, bot, message, chat_id, action):  # type = reply_message/new_user/new_group/no_time/...
         user_id = str(message.from_user.id)
         username = str(message.from_user.username)
         try:
@@ -58,6 +58,8 @@ class Apps:
             bot.send_message(chat_id, f'Новая группа:\nid {group_id} - "{group_title}")')
         elif action == 'no_time':
             bot.send_message(chat_id, f'У пользователя кончилось время:\nid {user_id} - {full_name} ({username})')
+        elif action == 'new_vpn_user':
+            bot.send_message(chat_id, f'Появился новый пользователь VPN:\nid {user_id} - {full_name} ({username})')
 
     def echo_voice(self, bot, message, txt_file, percent=25):  # Отправляет случайное сообщение из answers_NAME.txt
         answer_file = f'{self.data_path}/{txt_file}.txt'

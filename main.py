@@ -246,8 +246,7 @@ def disk_command(message):
 
 @bot.message_handler(commands=['get_vpn'])  # VPN
 def get_vpn_command(message):
-    region_dict = {'fb-us': 'USA', 'fb-fin': 'Finland', 'fb-fin2': 'Finland2', 'fb-ru': 'Mother-Russia',
-                   'fb-sin': 'Singapore'}
+    region_dict = {'fb-us': 'USA', 'fb-fin': 'Finland', 'fb-ru': 'Mother-Russia', 'fb-sin': 'Singapore'}
     platform_dict = {'iOS/Mac': 'mobileconfig', 'Android': 'sswan', 'Windows': 'p12'}
 
     if message.chat.type == 'private' and is_vpn_user_exist(message) is False:

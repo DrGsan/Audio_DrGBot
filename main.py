@@ -299,10 +299,10 @@ def get_vpn_command(message):
         for file in os.listdir(temp_path):
             for p in platform:
                 if platform_dict[p] == file.split('.')[1]:
-                    with open(f'{temp_path}/{file}', 'rb') as config:
+                    with open(f'{temp_path}/{file}', 'rb') as certificate:
                         Apps().send_chat_action(bot, chat_id=message.chat.id,
                                                 action='upload_document', sec=2)  # Уведомление Chat_Action
-                        mes = bot.send_document(message.chat.id, config)
+                        mes = bot.send_document(message.chat.id, certificate, disable_notification=True)
                         mes_id_list.append(mes.message_id)
         for p in platform:
             if p == 'Windows':
@@ -310,7 +310,7 @@ def get_vpn_command(message):
                     with open(f'data/vpn_files/ikev2_config_import_{r.split("fb-")[1]}.cmd', 'rb') as manual:
                         Apps().send_chat_action(bot, chat_id=message.chat.id,
                                                 action='upload_document', sec=2)  # Уведомление Chat_Action
-                        mes3 = bot.send_document(message.chat.id, manual)
+                        mes3 = bot.send_document(message.chat.id, manual, disable_notification=True)
                         mes_id_list.append(mes3.message_id)
 
         delete_time = 5

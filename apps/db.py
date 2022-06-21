@@ -171,12 +171,27 @@ def disk_insert(message, file_name, file_link, file_password, delete_days=10):  
 def log_insert(message):  # Запись в таблицу Logs
     line = Logs(
         message_id=message.message_id,
-        user_id=message.json['from']['id'],
+        user_id=message.from_user.id,
         lang=message.json['from']['language_code'],
         group_id=message.json['chat']['id'],
         group_type=message.json['chat']['type'],
         message_text=message.json['text'],
         message_type=message.content_type
+    )
+    session.add(line)
+    session.commit()
+
+
+def vpn_insert(message):  # Запись в таблицу Vpn
+    if message.from_user.username is None:
+        vpn_login = message.from_user.id
+    else:
+        vpn_login = message.from_user.username
+    line = Vpn(
+        user_id=message.from_user.id,
+        vpn_login=vpn_login,
+        vpn_setup='fb-fin | iOS/Mac, Android',
+        is_blocked=False
     )
     session.add(line)
     session.commit()
@@ -273,6 +288,13 @@ def is_vpn_blocked(message):
 
 def get_vpn_login(message):
     return session.scalars(select(Vpn.vpn_login).where(Vpn.user_id == message.from_user.id)).first()
+
+
+def is_vpn_user_exist(message):
+    if session.scalars(select(Vpn.user_id).where(Vpn.user_id == message.from_user.id)).first() is None:
+        return False
+    else:
+        return True
 
 
 def get_vpn_setup(message):

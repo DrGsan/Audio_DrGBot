@@ -550,8 +550,8 @@ if __name__ == '__main__':
         schedule.every().day.at('00:00').do(new_year_msk_function)
         Thread(target=schedule_checker).start()
 
-    schedule.every().day.at('01:00').do(temp_clean)
-    schedule.every().day.at('02:00').do(clean_disk)
+    schedule.every().day.at('02:10').do(temp_clean)
+    schedule.every().day.at('02:20').do(clean_disk)
     Thread(target=schedule_checker).start()
 
     bot.infinity_polling()

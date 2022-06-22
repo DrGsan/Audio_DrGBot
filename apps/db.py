@@ -191,8 +191,7 @@ def vpn_insert(message):  # Запись в таблицу Vpn
         user_id=message.from_user.id,
         vpn_login=vpn_login,
         vpn_setup='fb-fin | iOS/Mac, Android',
-        is_blocked=False,
-        comment='NEW'
+        is_blocked=False
     )
     session.add(line)
     session.commit()

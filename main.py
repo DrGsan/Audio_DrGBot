@@ -30,7 +30,7 @@ from strings.main_strings import MainStrings
 
 from config import *
 
-TOKEN = get_token('Audio_DrGBot_API', 'Telegram')  # os.environ['TOKEN']
+TOKEN = get_token('Audio_API', 'Telegram')  # os.environ['TOKEN']
 OAUTH_TOKEN = get_token('Oauth_Token', 'Yandex')
 FOLDER_ID = get_token('Folder_ID', 'Yandex')
 MY_ID = get_token('My_ID', 'Telegram')

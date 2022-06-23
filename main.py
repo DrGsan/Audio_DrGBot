@@ -30,7 +30,7 @@ from strings.main_strings import MainStrings
 
 from config import *
 
-TOKEN = get_token('Audio_DrGBot_API', 'Telegram')  # os.environ['TOKEN']
+TOKEN = os.environ['TOKEN']  # get_token('Audio_DrGBot_API', 'Telegram')
 OAUTH_TOKEN = get_token('Oauth_Token', 'Yandex')
 FOLDER_ID = get_token('Folder_ID', 'Yandex')
 MY_ID = get_token('My_ID', 'Telegram')
@@ -550,8 +550,11 @@ if __name__ == '__main__':
         schedule.every().day.at('00:00').do(new_year_msk_function)
         Thread(target=schedule_checker).start()
 
-    schedule.every().day.at('00:00').do(clean_disk)
+    schedule.every().day.at('00:15').do(clean_disk)
     schedule.every().day.at('00:30').do(temp_clean)
+    # 00:45 project update - Cron
+    # 01:00 server restart - Cron
+
     Thread(target=schedule_checker).start()
 
     bot.infinity_polling()

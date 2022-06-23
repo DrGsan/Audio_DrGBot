@@ -182,15 +182,15 @@ def log_insert(message):  # Запись в таблицу Logs
     session.commit()
 
 
-def vpn_insert(message):  # Запись в таблицу Vpn
-    if message.from_user.username is None:
+def vpn_insert(message, host='fb-fin'):  # Запись в таблицу Vpn
+    if message.from_user.username is None:  # fb-us, fb-fin, fb-ru, fb-sin | iOS/Mac, Android, Windows
         vpn_login = message.from_user.id
     else:
         vpn_login = message.from_user.username
     line = Vpn(
         user_id=message.from_user.id,
         vpn_login=vpn_login,
-        vpn_setup='fb-fin | iOS/Mac, Android',
+        vpn_setup=f'{host} | iOS/Mac, Android',
         is_blocked=False
     )
     session.add(line)

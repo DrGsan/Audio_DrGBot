@@ -7,12 +7,6 @@
 # OS X (macOS)
 
 - - - - -
-Скачать файл с расширением mobileconfig в приложение "Файлы". После зайти в приложение "Файлы" и открыть файл с
-расширением mobileconfig. После в Настройках нужно зайти в профили и установить новый профиль. После в Настройках зайти
-в сеть, выбрать VPN и нажать кнопку Подключиться.
-
-### More detailed:
-
 First, securely transfer the generated `.mobileconfig` file to your Mac, then double-click and follow the prompts to
 import as a macOS profile. If your Mac runs macOS Big Sur or newer, open System Preferences and go to the Profiles
 section to finish importing. When finished, check to make sure "IKEv2 VPN" is listed under System Preferences ->
@@ -35,12 +29,6 @@ is `Your VPN Server IP`".
 # iOS
 
 - - - - -
-Открыть файл с расширением mobileconfig, нажать в парвом верхнем углу отправить, выбрать приложение файлы. Запустить
-через это же приложение. Далее в приложении Настройки (Профиль загружен) нужно разрешить новые сертификаты и установить
-его. После установки в настройках появится раздел VPN.
-
-### More detailed:
-
 First, securely transfer the generated `.mobileconfig` file to your iOS device, then import it as an iOS profile. To
 transfer the file, you may use:
 
@@ -71,10 +59,6 @@ properly by [looking up your IP address on Google](). It should say "Your public
 # Android
 
 - - - - -
-Скачать strongSwan. Открыть приложение и добавить сертификат с расширением sswan
-
-### More detailed:
-
 1. Securely transfer the generated `.sswan` file to your Android device.
 2. Install strongSwan VPN Client
    from [Google Play](https://play.google.com/store/apps/details?id=org.strongswan.android)

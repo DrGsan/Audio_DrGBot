@@ -198,24 +198,15 @@ def vpn_insert(message, host='fb-fin'):  # Запись в таблицу Vpn
 
 
 def auto_clean_disk_files(YandexDisk, YA_DISK_TOKEN):
-    for file_name in session.scalars(select(Disk.file_name).where(Disk.is_deleted is False)).all():
-        is_deleted = session.scalars(select(Disk.is_deleted).where(Disk.file_name == file_name)).first()
+    for file_name in session.scalars(select(Disk.file_name).where(Disk.is_deleted == False)).all():
         delete_days = session.scalars(select(Disk.delete_days).where(Disk.file_name == file_name)).first()
-        if is_deleted is True:
-            pass
+        if delete_days == 0:
+            YandexDisk(YA_DISK_TOKEN).delete_file(file_name)
+            session.execute(update(Disk).where(Disk.file_name == file_name).values(is_deleted=True))
+            session.commit()
         else:
-            if delete_days == 0:
-                YandexDisk(YA_DISK_TOKEN).delete_file(file_name)
-                session.execute(update(Disk)
-                                .where(Disk.file_name == file_name)
-                                .values(is_deleted=True))
-                session.commit()
-                pass
-            else:
-                session.execute(update(Disk)
-                                .where(Disk.file_name == file_name)
-                                .values(delete_days=(delete_days - 1)))
-                session.commit()
+            session.execute(update(Disk).where(Disk.file_name == file_name).values(delete_days=(delete_days - 1)))
+            session.commit()
 
 
 def work_with_db(message):  # Основная функция которая делает записи в DB

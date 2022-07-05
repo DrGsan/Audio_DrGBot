@@ -265,20 +265,24 @@ def update_is_left(message, is_left):
     session.commit()
 
 
-def is_admin(message):
-    return session.scalars(select(Users.is_admin).where(Users.user_id == message.from_user.id)).first()
-
-
-def is_blocked(message):
-    return session.scalars(select(Users.is_blocked).where(Users.user_id == message.from_user.id)).first()
-
-
-def is_vpn_blocked(message):
-    return session.scalars(select(Vpn.is_blocked).where(Vpn.user_id == message.from_user.id)).first()
-
-
-def get_vpn_login(message):
-    return session.scalars(select(Vpn.vpn_login).where(Vpn.user_id == message.from_user.id)).first()
+def get_cell(message, bool_param):
+    where_column = Users.user_id
+    if bool_param == 'is_admin':
+        bool_param = Users.is_admin
+    elif bool_param == 'is_blocked':
+        bool_param = Users.is_blocked
+    elif bool_param == 'get_balance':
+        bool_param = Users.total_audio
+    elif bool_param == 'is_vpn_blocked':
+        bool_param = Vpn.is_blocked
+        where_column = Vpn.user_id
+    elif bool_param == 'get_vpn_login':
+        bool_param = Vpn.vpn_login
+        where_column = Vpn.user_id
+    elif bool_param == 'get_vpn_setup':
+        bool_param = Vpn.vpn_setup
+        where_column = Vpn.user_id
+    return session.scalars(select(bool_param).where(where_column == message.from_user.id)).first()
 
 
 def is_vpn_user_exist(message):
@@ -286,14 +290,6 @@ def is_vpn_user_exist(message):
         return False
     else:
         return True
-
-
-def get_vpn_setup(message):
-    return session.scalars(select(Vpn.vpn_setup).where(Vpn.user_id == message.from_user.id)).first()
-
-
-def get_balance(message):
-    return session.scalars(select(Users.total_audio).where(Users.user_id == message.from_user.id)).first()
 
 
 def main():

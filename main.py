@@ -20,9 +20,8 @@ from apps.currency import currency
 from apps.translate import Translate
 from apps.transliterate import Transliterate
 from apps.ya_disk import YandexDisk, ZipArchiver, PassGen
-from apps.db import work_with_db, get_token, get_groups, is_admin, is_blocked, get_total_audio, update_total_audio, \
-    update_is_left, disk_insert, auto_clean_disk_files, log_insert, is_vpn_blocked, get_vpn_setup, get_vpn_login, \
-    get_balance, vpn_insert, is_vpn_user_exist
+from apps.db import work_with_db, get_token, get_groups, get_total_audio, update_total_audio, update_is_left, \
+    disk_insert, auto_clean_disk_files, log_insert, vpn_insert, is_vpn_user_exist, get_cell
 
 from strings.main_strings import MainStrings
 
@@ -67,17 +66,15 @@ def schedule_checker():
 @bot.message_handler(commands=['start'])
 def start_message(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_blocked(message) is False:
+    if message.chat.type == 'private' and get_cell(message, 'is_blocked') is False:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, f'Приветствую, {message.from_user.first_name}')
-
-
 
 
 @bot.message_handler(commands=['admin'])
 def get_admin_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_admin(message) is True:
+    if message.chat.type == 'private' and get_cell(message, 'is_admin') is True:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, f'{message.from_user.first_name}, вот список доступных Вам команд:\n'
                                           f'/send_text - Отправить текстовое сообщение в группу.\n'
@@ -88,29 +85,29 @@ def get_admin_command(message):
 @bot.message_handler(commands=['balance'])
 def get_balance_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if is_blocked(message) is True:
+    if get_cell(message, 'is_blocked') is True:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, f'{message.from_user.first_name}, Вы в чёрном списке и Вам не доступны '
                                           f'основные функции бота.')
     else:
-        if is_admin(message) is True:
+        if get_cell(message, 'is_admin') is True:
             Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
             bot.send_message(message.chat.id, f'Хозяин, {message.from_user.first_name}, Вы админ бота, Вам можно всё.')
         else:
-            if get_balance(message) is None:
+            if get_cell(message, 'get_balance') is None:
                 Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
                 bot.send_message(message.chat.id, f'{message.from_user.first_name}, у Вас нет баланса, т.к. вы '
                                                   f'ещё не отправляли аудио сообщения.')
             else:
                 Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
                 bot.send_message(message.chat.id, f'{message.from_user.first_name}, у Вас осталось '
-                                                  f'{get_balance(message)} секунд.')
+                                                  f'{get_cell(message, "get_balance")} секунд.')
 
 
 @bot.message_handler(commands=['send_text'])  # Отправка текстовых сообщений в определённый чат
 def send_text_to_group(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_admin(message) is True:
+    if message.chat.type == 'private' and get_cell(message, 'is_admin') is True:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
@@ -128,7 +125,7 @@ def send_text_message(message):
 @bot.message_handler(commands=['send_voice'])  # Отправка аудио сообщений в определённый чат
 def send_audio_to_group(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_admin(message) is True:
+    if message.chat.type == 'private' and get_cell(message, 'is_admin') is True:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
@@ -166,7 +163,7 @@ def send_audio_message(message):
 @bot.message_handler(commands=['disk'])
 def disk_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_blocked(message) is False:
+    if message.chat.type == 'private' and get_cell(message, 'is_blocked') is False:
         zip_folder = f'temp/temp_disk_{message.from_user.id}'
         zip_name = f"{Apps().current_date('%Y%m%d%H%M')}-{str(PassGen().pass_gen(length=6, method=['digits']))}"
         zip_password = PassGen().pass_gen(length=25, method=['lowercase', 'uppercase', 'digits'])
@@ -200,7 +197,7 @@ def disk_command(message):
                     time.sleep(5)
                     os.remove(f'{zip_folder}/{zip_name}.zip')
 
-                    if is_admin(message) is True:
+                    if get_cell(message, 'is_admin') is True:
                         disk_insert(message, file_name=f'{zip_name}',
                                     file_link=zip_link, file_password=zip_password,
                                     delete_days=10)
@@ -234,8 +231,8 @@ def get_vpn_command(message):
     if message.chat.type == 'private' and is_vpn_user_exist(message) is False:
         vpn_insert(message, host='fb-fin')
         Apps().send_notification(bot, message, chat_id=MY_ID, action='new_vpn_user')
-    if message.chat.type == 'private' and is_vpn_blocked(message) is False:
-        setup = get_vpn_setup(message)
+    if message.chat.type == 'private' and get_cell(message, 'is_vpn_blocked') is False:
+        setup = get_cell(message, 'get_vpn_setup')
         region = setup.split(' | ')[0].split(', ')
         platform = setup.split(' | ')[1].split(', ')
 
@@ -263,9 +260,12 @@ def get_vpn_command(message):
         Apps().make_folder(temp_path)
 
         for r in region:
-            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).add_vpn_user(get_vpn_login(message))
-            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).copy_sert(get_vpn_login(message))
-            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path).delete_sert_files(get_vpn_login(message))
+            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path). \
+                add_vpn_user(get_cell(message, 'get_vpn_login'))
+            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path). \
+                copy_sert(get_cell(message, 'get_vpn_login'))
+            VPN(server_host=r, remote_dir=SERVER_DIR, local_dir=temp_path). \
+                delete_sert_files(get_cell(message, 'get_vpn_login'))
 
         bot.delete_message(message.chat.id, mes1.message_id)
 
@@ -277,6 +277,10 @@ def get_vpn_command(message):
             Apps().send_chat_action(bot, chat_id=message.chat.id,
                                     action='upload_document', sec=2)  # Уведомление Chat_Action
             mes2 = bot.send_document(message.chat.id, manual, disable_notification=True)
+        # with open('data/vpn_files/Manual iOS.mov', 'rb') as manual:  # Много весит, не отправляется
+        #     Apps().send_chat_action(bot, chat_id=message.chat.id,
+        #                             action='upload_video', sec=2)  # Уведомление Chat_Action
+        #     vid = bot.send_document(message.chat.id, manual, disable_notification=True)
         mes_id_list = []
         for file in os.listdir(temp_path):
             for p in platform:
@@ -305,12 +309,13 @@ def get_vpn_command(message):
         bot.delete_message(message.chat.id, mes2.message_id)
         bot.delete_message(message.chat.id, mes4.message_id)
         bot.delete_message(message.chat.id, img.message_id)
+        # bot.delete_message(message.chat.id, vid.message_id)
 
 
 @bot.message_handler(commands=['currency'])  # Курс Валют
 def currency_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if is_blocked(message) is False:
+    if get_cell(message, 'is_blocked') is False:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, f'Текущий курс валют:\n$ - {currency("USD")} ₽\n€ - {currency("EUR")} ₽')
 
@@ -318,7 +323,7 @@ def currency_command(message):
 @bot.message_handler(commands=['id'])  # Отправка id пользователя и группы (если бот в группе)
 def id_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if is_blocked(message) is False:
+    if get_cell(message, 'is_blocked') is False:
         user_id = str(message.from_user.id)
         group_id = str(message.chat.id)
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
@@ -331,7 +336,7 @@ def id_command(message):
 @bot.message_handler(commands=['translate'])  # Переводчик
 def translate_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_blocked(message) is False:
+    if message.chat.type == 'private' and get_cell(message, 'is_blocked') is False:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, MainStrings().button_translator)
         bot.register_next_step_handler(message, translate)
@@ -366,7 +371,7 @@ def translate(message):
 @bot.message_handler(commands=['weather'])  # Погода
 def weather_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_blocked(message) is False:
+    if message.chat.type == 'private' and get_cell(message, 'is_blocked') is False:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, MainStrings().button_weather)
         bot.register_next_step_handler(message, weather)
@@ -394,7 +399,7 @@ def weather(message):
 @bot.message_handler(commands=['transliterate'])  # Иероглифы
 def transliterate_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_blocked(message) is False:
+    if message.chat.type == 'private' and get_cell(message, 'is_blocked') is False:
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, MainStrings().button_transliterate)
         bot.register_next_step_handler(message, transliterate_hieroglyphs)
@@ -409,7 +414,7 @@ def transliterate_hieroglyphs(message):
 @bot.message_handler(commands=['passport'])  # Транслитерация имени и фамилии для загранпаспорта
 def transliterate_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_blocked(message) is False:
+    if message.chat.type == 'private' and get_cell(message, 'is_blocked') is False:
         Apps().send_chat_action(bot, chat_id=message.chat.id, sec=3)  # Уведомление Chat_Action
         bot.send_message(message.chat.id, MainStrings().passport)
         Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
@@ -431,8 +436,9 @@ def transliterate_passport(message):
                    'migrate_from_chat_id', 'pinned_message'])
 def handler_content_types(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.content_type == 'voice' and is_blocked(message) is False and message.from_user.is_bot is False:
-        if is_admin(message) is True:
+    if message.content_type == 'voice' and get_cell(message,
+                                                    'is_blocked') is False and message.from_user.is_bot is False:
+        if get_cell(message, 'is_admin') is True:
             work_with_audio(message)
         else:
             if (get_total_audio(message)) <= 0:
@@ -485,10 +491,10 @@ def handler_content_types(message):
             else:
                 bot.send_message(message.chat.id,
                                  f'ОШИБКА API "{message.document.file_name}" > 20mb')
-        elif message.content_type == 'sticker' and is_blocked(message) is False:
+        elif message.content_type == 'sticker' and get_cell(message, 'is_blocked') is False:
             Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
             bot.send_message(message.chat.id, f'ID стикера: {message.sticker.file_id}')
-        elif message.content_type == 'location' and is_blocked(message) is False:
+        elif message.content_type == 'location' and get_cell(message, 'is_blocked') is False:
             Apps().send_chat_action(bot, chat_id=message.chat.id, sec=2)  # Уведомление Chat_Action
             bot.send_message(message.chat.id, f'lat = {message.location.latitude}\n'
                                               f'lon = {message.location.longitude}\n'

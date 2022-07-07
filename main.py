@@ -316,7 +316,7 @@ def get_vpn_command(message):
 @bot.message_handler(commands=['get_kino_pub'])  # получить файл КиноПаба (IPA)
 def kino_pub_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if message.chat.type == 'private' and is_admin(message) is True:
+    if message.chat.type == 'private' and get_cell(message, 'is_admin') is True:
         with open('data/kuno_pub/cncrt.ipa', 'rb') as certificate:
             Apps().send_chat_action(bot, chat_id=message.chat.id,
                                     action='upload_document', sec=2)  # Уведомление Chat_Action

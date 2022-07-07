@@ -79,7 +79,8 @@ def get_admin_command(message):
         bot.send_message(message.chat.id, f'{message.from_user.first_name}, вот список доступных Вам команд:\n'
                                           f'/send_text - Отправить текстовое сообщение в группу.\n'
                                           f'/send_voice - Отправить аудио сообщение в группу.\n'
-                                          f'/get_vpn - Получить сертификаты IKEv2 для доступа к VPN.')
+                                          f'/get_vpn - Получить сертификаты IKEv2 для доступа к VPN.\n'
+                                          f'/get_kino_pub - Получить IPA файл КиноПаба (февраль 2022 г.).')
 
 
 @bot.message_handler(commands=['balance'])
@@ -310,6 +311,18 @@ def get_vpn_command(message):
         bot.delete_message(message.chat.id, mes4.message_id)
         bot.delete_message(message.chat.id, img.message_id)
         # bot.delete_message(message.chat.id, vid.message_id)
+
+
+@bot.message_handler(commands=['get_kino_pub'])  # получить файл КиноПаба (IPA)
+def kino_pub_command(message):
+    work_with_db(message)  # Основная функция которая делает записи в DB
+    if message.chat.type == 'private' and is_admin(message) is True:
+        with open('data/kuno_pub/cncrt.ipa', 'rb') as certificate:
+            Apps().send_chat_action(bot, chat_id=message.chat.id,
+                                    action='upload_document', sec=2)  # Уведомление Chat_Action
+            kp_file = bot.send_document(message.chat.id, certificate, disable_notification=True)
+        time.sleep(2 * 60)
+        bot.delete_message(message.chat.id, kp_file)
 
 
 @bot.message_handler(commands=['currency'])  # Курс Валют

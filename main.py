@@ -7,7 +7,13 @@ import urllib
 import shutil
 import asyncio
 # noinspection PyPackageRequirements
+from telebot import asyncio_filters
+# noinspection PyPackageRequirements
 from telebot.async_telebot import AsyncTeleBot
+# noinspection PyPackageRequirements
+from telebot.asyncio_storage import StateMemoryStorage  # list of storages, you can use any storage
+# noinspection PyPackageRequirements
+from telebot.asyncio_handler_backends import State, StatesGroup  # new feature for states.
 import requests
 import aioschedule
 from apps.apps import Apps
@@ -34,7 +40,7 @@ YANDEX_WEATHER_API = get_token('Weather_API', 'Yandex')
 YA_DISK_TOKEN = get_token('Disk_API', 'Yandex')
 GEOCODER_USER = get_token('User_Key', 'GeoCoder')
 
-bot = AsyncTeleBot(TOKEN)
+bot = AsyncTeleBot(TOKEN, state_storage=StateMemoryStorage())  # default state storage is state memory storage
 
 
 async def new_year_msk_function():
@@ -84,6 +90,10 @@ async def scheduler():
         await asyncio.sleep(1)
 
 
+class MyStates(StatesGroup):  # Just create different states group
+    full_name = State()
+
+
 async def main():
     await asyncio.gather(bot.infinity_polling(True), scheduler())
 
@@ -94,6 +104,15 @@ async def start_message(message):
     if get_status(message) in [2, 4]:  # User, Admin (only Private)
         await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         await bot.send_message(message.chat.id, f'Приветствую, {message.from_user.first_name}!')
+
+
+@bot.message_handler(state="*", commands='cancel')
+async def any_state(message):
+    """
+    Команда для отмены любой функции в которой используется state.
+    """
+    await bot.send_message(message.chat.id, "Команда была отменена.")
+    await bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(commands=['admin'])
@@ -456,21 +475,24 @@ def transliterate_hieroglyphs(message):
 
 
 @bot.message_handler(commands=['passport'])  # Транслитерация имени и фамилии для загранпаспорта
-async def transliterate_command(message):
+async def start_passport_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    await bot.send_message(message.chat.id, 'Временно выключен.')
-    # if get_status(message) in [2, 4]:  # User, Admin (only Private)
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id, sec=3)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, MainStrings().passport)
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, MainStrings().button_passport)
-    #     bot.register_next_step_handler(message, transliterate_passport)
+    if get_status(message) in [2, 4]:  # User, Admin (only Private)
+        await bot.set_state(message.from_user.id, MyStates.full_name, message.chat.id)
+        await Apps().send_chat_action(bot, chat_id=message.chat.id, sec=3)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, MainStrings().passport)
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, MainStrings().button_passport)
 
 
-def transliterate_passport(message):
-    Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    result = Transliterate.transliterate_passport(message.text)
-    bot.send_message(message.chat.id, result)
+@bot.message_handler(state=MyStates.full_name)
+async def result_passport_command(message):
+    async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['test'] = message.text
+    await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+    result = Transliterate.transliterate_passport(data['test'])
+    await bot.send_message(message.chat.id, result)
+    await bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(
@@ -577,6 +599,10 @@ async def work_with_audio(message):
     await asyncio.sleep(5)
     os.remove(speech_file)  # Удаляет аудио файл после его преобразования и отправки как текстового сообщения
 
+
+# register filters
+bot.add_custom_filter(asyncio_filters.StateFilter(bot))
+bot.add_custom_filter(asyncio_filters.IsDigitFilter())
 
 if __name__ == '__main__':
     asyncio.run(main())

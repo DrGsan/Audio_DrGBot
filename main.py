@@ -85,7 +85,7 @@ async def scheduler():
 
 
 async def main():
-    await asyncio.gather(bot.infinity_polling(skip_pending=True), scheduler())
+    await asyncio.gather(bot.infinity_polling(True), scheduler())
 
 
 @bot.message_handler(commands=['start'])

@@ -78,8 +78,6 @@ async def scheduler():
     aioschedule.every().day.at('00:30').do(temp_clean)
     # 00:45 project update - Cron
     # 01:00 server restart - Cron
-    aioschedule.every().day.at('19:52').do(clean_disk)
-    aioschedule.every().day.at('19:5').do(clean_disk)
 
     while True:
         await aioschedule.run_pending()

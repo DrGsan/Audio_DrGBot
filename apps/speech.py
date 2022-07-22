@@ -39,11 +39,3 @@ class Speech:
 
             for chunk in resp.iter_content(chunk_size=None):
                 yield chunk
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

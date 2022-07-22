@@ -76,11 +76,3 @@ class Apps:
                 await Apps().send_chat_action(bot, chat_id=message.chat.id, text=phrase)  # Уведомление Chat_Action
                 bot.send_message(message.chat.id, phrase)
                 print(phrase)
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

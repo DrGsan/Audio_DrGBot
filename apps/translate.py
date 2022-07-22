@@ -23,11 +23,3 @@ class Translate:
         response.raise_for_status()
         translations = response.json()["translations"]
         return translations[0]["text"].replace("+", " ")
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

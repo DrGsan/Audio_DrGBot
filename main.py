@@ -81,7 +81,7 @@ async def scheduler():
 
     aioschedule.every().day.at('00:15').do(clean_disk)
     aioschedule.every().day.at('00:30').do(temp_clean)
-    # 00:45 project update - Cron
+    # 00:45 project update - Cron (Removed)
     # 01:00 server restart - Cron
 
     while True:
@@ -90,6 +90,8 @@ async def scheduler():
 
 
 class MyStates(StatesGroup):  # Just create different states group
+    send_text_t = State()
+    send_text_a = State()
     passport_name = State()
     transliterate_text = State()
     weather_city = State()
@@ -152,37 +154,42 @@ async def get_balance_command(message):
 @bot.message_handler(commands=['send_text'])  # Отправка текстовых сообщений в определённый чат
 async def send_text_to_group(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    await bot.send_message(message.chat.id, 'Временно выключен.')
-    # if get_status(message) == 4:  # Admin (only Private)
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, get_groups())
-    #     bot.register_next_step_handler(message, send_text_message)
+    if get_status(message) == 4:  # Admin (only Private)
+        await bot.set_state(message.from_user.id, MyStates.send_text_t, message.chat.id)
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, get_groups())
 
 
-def send_text_message(message):
-    group_id = str(message.text).split(' ')[0]
-    group_text = ' '.join(str(message.text).split(' ')[1:])
-    Apps().send_chat_action(bot, chat_id=group_id, text=group_text)  # Уведомление Chat_Action
-    bot.send_message(group_id, group_text)
+@bot.message_handler(state=MyStates.send_text_t)
+async def result_send_text_to_group(message):
+    async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['text'] = message.text
+    group_id = str(data['text']).split(' ')[0]
+    group_text = ' '.join(str(data['text']).split(' ')[1:])
+    await Apps().send_chat_action(bot, chat_id=group_id, text=group_text)  # Уведомление Chat_Action
+    await bot.send_message(group_id, group_text)
+    await bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(commands=['send_voice'])  # Отправка аудио сообщений в определённый чат
 async def send_audio_to_group(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    await bot.send_message(message.chat.id, 'Временно выключен.')
-    # if get_status(message) == 4:  # Admin (only Private)
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, get_groups())
-    #     bot.register_next_step_handler(message, send_audio_message)
+    if get_status(message) == 4:  # Admin (only Private)
+        await bot.set_state(message.from_user.id, MyStates.send_text_a, message.chat.id)
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, 'Введите id группы и текст через пробел (пример: -12345 Текст)')
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, get_groups())
 
 
-def send_audio_message(message):
-    group_id = str(message.text).split(' ')[0]
-    group_text = ' '.join(str(message.text).split(' ')[1:])
+@bot.message_handler(state=MyStates.send_text_a)
+async def result_send_audio_to_group(message):
+    async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['text'] = message.text
+    group_id = str(data['text']).split(' ')[0]
+    group_text = ' '.join(str(data['text']).split(' ')[1:])
     temp_path = 'temp'
     Apps().make_folder(temp_path)  # Создать папку если она отсутствует
     iam_file = f'{temp_path}/iam.txt'
@@ -201,10 +208,12 @@ def send_audio_message(message):
             f.write(audio_content)
 
     audio = open(output_file, 'rb')
-    Apps().send_chat_action(bot, chat_id=group_id, action='record_audio', text=group_text)  # Уведомление Chat_Action
-    bot.send_audio(group_id, audio)
+    await Apps().send_chat_action(bot, chat_id=group_id, action='record_audio',
+                                  text=group_text)  # Уведомление Chat_Action
+    await bot.send_audio(group_id, audio)
     audio.close()
     os.remove(output_file)
+    await bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(commands=['disk'])

@@ -433,16 +433,18 @@ def translate(message):
 @bot.message_handler(commands=['weather'])  # Погода
 async def weather_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    await bot.send_message(message.chat.id, 'Временно выключен.')
-    # if get_status(message) in [2, 4]:  # User, Admin (only Private)
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, MainStrings().button_weather)
-    #     bot.register_next_step_handler(message, weather)
+    if get_status(message) in [2, 4]:  # User, Admin (only Private)
+        await bot.set_state(message.from_user.id, MyStates.weather_city, message.chat.id)
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, MainStrings().button_weather)
 
 
-def weather(message):
+@bot.message_handler(state=MyStates.weather_city, content_types=['text', 'location'])
+async def result_weather_command(message):
+    async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['text'] = message.text
     w = Weather(YANDEX_WEATHER_API)
-    Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+    await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
     while True:
         try:
             if message.location is None:
@@ -450,13 +452,15 @@ def weather(message):
             else:
                 geo_location = [message.location.latitude, message.location.longitude]
                 result = w.get_weather(GEOCODER_USER, geo_location)
-            bot.send_message(message.chat.id, result)
+            await bot.send_message(message.chat.id, result)
             break
         except KeyError:
             print(MainStrings().weather_empty)
+            break
         except BaseException:
             print(MainStrings().weather_error)
             break
+    await bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(commands=['transliterate'])  # Иероглифы
@@ -469,12 +473,13 @@ async def transliterate_command(message):
 
 
 @bot.message_handler(state=MyStates.transliterate_text)
-async def result_passport_command(message):
+async def result_transliterate_command(message):
     async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['test'] = message.text
     await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
     result = Transliterate.transliterate_hieroglyphs(data['test'])
     await bot.send_message(message.chat.id, result)
+    await bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(commands=['passport'])  # Транслитерация имени и фамилии для загранпаспорта

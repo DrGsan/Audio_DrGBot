@@ -78,9 +78,9 @@ class Weather:
             }
 
         if type(city_name) == str:
-            enter = 'Погода в городе {} сейчас: '.format(city_name)
+            enter = 'Погода в городе {} сейчас:\n'.format(city_name)
         elif type(city_name) == list:
-            enter = 'Погода по вашим координатам сейчас: '
+            enter = 'Погода по вашим координатам сейчас:\n'
 
         now = '{}\n' \
               'Температура {}°С (ощущается как {}°С)\n' \

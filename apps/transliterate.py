@@ -31,13 +31,6 @@ class Transliterate:
         return self
 
 
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()
-
 '''
 А –   丹升什闩
 Б –   石右五

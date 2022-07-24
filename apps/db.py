@@ -290,11 +290,3 @@ def is_vpn_user_exist(message):
         return False
     else:
         return True
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

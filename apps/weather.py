@@ -108,11 +108,3 @@ class Weather:
                 WEATHER['forecast'][i]['prec_mm'], WEATHER['forecast'][i]['prec_period'],
                 WEATHER['forecast'][i]['prec_prob'])
         return enter + now + forecast
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

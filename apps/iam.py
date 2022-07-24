@@ -23,11 +23,3 @@ class IAM_token:
         with open(iam_file, 'w') as f:
             f.write(iam_token)
         return iam_token
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

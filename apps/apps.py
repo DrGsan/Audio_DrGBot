@@ -19,8 +19,9 @@ class Apps:
         except OSError:
             os.mkdir(directory)
 
-    def send_chat_action(self, bot, chat_id, action='typing', sec=1, text=None):  # Уведомление Chat_Action
-        bot.send_chat_action(chat_id, action)  # action typing/choose_sticker/record_audio/upload_document/upload_photo
+    async def send_chat_action(self, bot, chat_id, action='typing', sec=1, text=None):  # Уведомление Chat_Action
+        await bot.send_chat_action(chat_id, action)
+        # action typing/choose_sticker/record_audio/upload_document/upload_photo
         if text is not None:
             if len(text) < 15:
                 sec = 1
@@ -36,7 +37,8 @@ class Apps:
                 sec = 5
         time.sleep(sec)
 
-    def send_notification(self, bot, message, chat_id, action):  # type = reply_message/new_user/new_group/no_time/...
+    async def send_notification(self, bot, message, chat_id, action):
+        # type = reply_message/new_user/new_group/no_time/...
         user_id = str(message.from_user.id)
         username = str(message.from_user.username)
         try:
@@ -48,20 +50,22 @@ class Apps:
         message_id = str(message.message_id)
         text = str(message.text)
         if action == 'reply_message':
-            bot.send_message(chat_id, f'Новое reply сообщение:\n'
-                                      f'id {group_id} - "{group_title}")\n'
-                                      f'id {user_id} - {full_name} ({username})\n'
-                                      f'message_id {message_id} - {text}')
+            await bot.send_message(chat_id, f'Новое reply сообщение:\n'
+                                            f'id {group_id} - "{group_title}")\n'
+                                            f'id {user_id} - {full_name} ({username})\n'
+                                            f'message_id {message_id} - {text}')
         elif action == 'new_user':
-            bot.send_message(chat_id, f'Новый пользователь:\nid {user_id} - {full_name} ({username})')
+            await bot.send_message(chat_id, f'Новый пользователь:\nid {user_id} - {full_name} ({username})')
         elif action == 'new_group':
-            bot.send_message(chat_id, f'Новая группа:\nid {group_id} - "{group_title}")')
+            await bot.send_message(chat_id, f'Новая группа:\nid {group_id} - "{group_title}")')
         elif action == 'no_time':
-            bot.send_message(chat_id, f'У пользователя кончилось время:\nid {user_id} - {full_name} ({username})')
+            await bot.send_message(chat_id, f'У пользователя кончилось время:\nid {user_id} - {full_name} ({username})')
         elif action == 'new_vpn_user':
-            bot.send_message(chat_id, f'Появился новый пользователь VPN:\nid {user_id} - {full_name} ({username})')
+            await bot.send_message(chat_id,
+                                   f'Появился новый пользователь VPN:\nid {user_id} - {full_name} ({username})')
 
-    def echo_voice(self, bot, message, txt_file, percent=25):  # Отправляет случайное сообщение из answers_NAME.txt
+    async def echo_voice(self, bot, message, txt_file,
+                         percent=25):  # Отправляет случайное сообщение из answers_NAME.txt
         answer_file = f'{self.data_path}/{txt_file}.txt'
         number = int(100 / percent)
         random_number = random.randint(1, number)
@@ -69,14 +73,6 @@ class Apps:
             with open(answer_file, 'r', encoding="utf-8") as file:
                 lines = file.readlines()
                 phrase = random.choice(lines)
-                Apps().send_chat_action(bot, chat_id=message.chat.id, text=phrase)  # Уведомление Chat_Action
+                await Apps().send_chat_action(bot, chat_id=message.chat.id, text=phrase)  # Уведомление Chat_Action
                 bot.send_message(message.chat.id, phrase)
                 print(phrase)
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

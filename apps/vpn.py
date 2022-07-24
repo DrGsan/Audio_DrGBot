@@ -23,11 +23,3 @@ class VPN:
 
     def delete_sert_files(self, user_name):
         os.system(f'ssh {self.server_host} "rm {user_name}*"')
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

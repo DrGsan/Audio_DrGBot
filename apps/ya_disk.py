@@ -89,11 +89,3 @@ class PassGen:
                 pwd.append(random.choice(string.punctuation))
         random.shuffle(pwd)
         return ''.join(pwd)
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

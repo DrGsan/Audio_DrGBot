@@ -172,7 +172,7 @@ def log_insert(message):  # Запись в таблицу Logs
     line = Logs(
         message_id=message.message_id,
         user_id=message.from_user.id,
-        lang=message.json['from']['language_code'],
+        lang=message.from_user.language_code,
         group_id=message.json['chat']['id'],
         group_type=message.json['chat']['type'],
         message_text=message.json['text'],

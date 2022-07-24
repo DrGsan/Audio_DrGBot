@@ -90,7 +90,9 @@ async def scheduler():
 
 
 class MyStates(StatesGroup):  # Just create different states group
-    full_name = State()
+    passport_name = State()
+    transliterate_text = State()
+    weather_city = State()
 
 
 async def main():
@@ -361,7 +363,7 @@ async def get_vpn_command(message):
 @bot.message_handler(commands=['get_kino_pub'])  # получить файл КиноПаба (IPA)
 async def kino_pub_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    if get_status(message) == 4:  # Admin (only Private)
+    if get_status(message) != 0:  # Not Blocked
         with open('data/kuno_pub/cncrt.ipa', 'rb') as certificate:
             await Apps().send_chat_action(bot, chat_id=message.chat.id,
                                           action='upload_document', sec=2)  # Уведомление Chat_Action
@@ -460,31 +462,33 @@ def weather(message):
 @bot.message_handler(commands=['transliterate'])  # Иероглифы
 async def transliterate_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    await bot.send_message(message.chat.id, 'Временно выключен.')
-    # if get_status(message) in [2, 4]:  # User, Admin (only Private)
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, MainStrings().button_transliterate)
-    #     bot.register_next_step_handler(message, transliterate_hieroglyphs)
+    if get_status(message) in [2, 4]:  # User, Admin (only Private)
+        await bot.set_state(message.from_user.id, MyStates.transliterate_text, message.chat.id)
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, MainStrings().button_transliterate)
 
 
-def transliterate_hieroglyphs(message):
-    Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    result = Transliterate.transliterate_hieroglyphs(message.text)
-    bot.send_message(message.chat.id, result)
+@bot.message_handler(state=MyStates.transliterate_text)
+async def result_passport_command(message):
+    async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['test'] = message.text
+    await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+    result = Transliterate.transliterate_hieroglyphs(data['test'])
+    await bot.send_message(message.chat.id, result)
 
 
 @bot.message_handler(commands=['passport'])  # Транслитерация имени и фамилии для загранпаспорта
 async def start_passport_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
     if get_status(message) in [2, 4]:  # User, Admin (only Private)
-        await bot.set_state(message.from_user.id, MyStates.full_name, message.chat.id)
+        await bot.set_state(message.from_user.id, MyStates.passport_name, message.chat.id)
         await Apps().send_chat_action(bot, chat_id=message.chat.id, sec=3)  # Уведомление Chat_Action
         await bot.send_message(message.chat.id, MainStrings().passport)
         await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
         await bot.send_message(message.chat.id, MainStrings().button_passport)
 
 
-@bot.message_handler(state=MyStates.full_name)
+@bot.message_handler(state=MyStates.passport_name)
 async def result_passport_command(message):
     async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         data['test'] = message.text

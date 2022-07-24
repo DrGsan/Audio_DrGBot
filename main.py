@@ -397,18 +397,20 @@ async def id_command(message):
 @bot.message_handler(commands=['translate'])  # Переводчик
 async def translate_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
-    await bot.send_message(message.chat.id, 'Временно выключен.')
-    # if get_status(message) in [2, 4]:  # User, Admin (only Private)
-    #     Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    #     bot.send_message(message.chat.id, MainStrings().button_translator)
-    #     bot.register_next_step_handler(message, translate)
+    if get_status(message) in [2, 4]:  # User, Admin (only Private)
+        await bot.set_state(message.from_user.id, MyStates.transliterate_text, message.chat.id)
+        await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+        await bot.send_message(message.chat.id, MainStrings().button_translator)
 
 
-def translate(message):
+@bot.message_handler(state=MyStates.transliterate_text)
+async def result_translate_command(message):
+    async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
+        data['text'] = message.text
     temp_path = 'temp/'
     Apps().make_folder(temp_path)  # Создать папку если она отсутствует
     iam_file = temp_path + 'iam.txt'
-    Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+    await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
     while True:
         try:
             iam_file = temp_path + 'iam.txt'
@@ -418,16 +420,17 @@ def translate(message):
                 iam_token = f.read()
             t = Translate(FOLDER_ID, iam_token)
             if t.get_language(message.text) == 'en':
-                result = t.get_translation(message.text, 'en', 'ru')
+                result = t.get_translation(data['text'], 'en', 'ru')
             else:
-                result = t.get_translation(message.text, 'ru', 'en')
-            bot.send_message(message.chat.id, result)
+                result = t.get_translation(data['text'], 'ru', 'en')
+            await bot.send_message(message.chat.id, result)
             break
         except KeyError:
-            bot.send_message(message.chat.id, MainStrings().default_error)
+            await bot.send_message(message.chat.id, MainStrings().default_error)
             break
         except requests.exceptions.HTTPError:
             IAM_token(OAUTH_TOKEN).create_token(iam_file)
+    await bot.delete_state(message.from_user.id, message.chat.id)
 
 
 @bot.message_handler(commands=['weather'])  # Погода
@@ -448,7 +451,7 @@ async def result_weather_command(message):
     while True:
         try:
             if message.location is None:
-                result = w.get_weather(GEOCODER_USER, message.text)
+                result = w.get_weather(GEOCODER_USER, data['text'])
             else:
                 geo_location = [message.location.latitude, message.location.longitude]
                 result = w.get_weather(GEOCODER_USER, geo_location)
@@ -475,9 +478,9 @@ async def transliterate_command(message):
 @bot.message_handler(state=MyStates.transliterate_text)
 async def result_transliterate_command(message):
     async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-        data['test'] = message.text
+        data['text'] = message.text
     await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    result = Transliterate.transliterate_hieroglyphs(data['test'])
+    result = Transliterate.transliterate_hieroglyphs(data['text'])
     await bot.send_message(message.chat.id, result)
     await bot.delete_state(message.from_user.id, message.chat.id)
 
@@ -496,9 +499,9 @@ async def start_passport_command(message):
 @bot.message_handler(state=MyStates.passport_name)
 async def result_passport_command(message):
     async with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-        data['test'] = message.text
+        data['text'] = message.text
     await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-    result = Transliterate.transliterate_passport(data['test'])
+    result = Transliterate.transliterate_passport(data['text'])
     await bot.send_message(message.chat.id, result)
     await bot.delete_state(message.from_user.id, message.chat.id)
 

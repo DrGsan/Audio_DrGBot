@@ -377,8 +377,11 @@ async def kino_pub_command(message):
             await Apps().send_chat_action(bot, chat_id=message.chat.id,
                                           action='upload_document', sec=2)  # Уведомление Chat_Action
             kp_file = await bot.send_document(message.chat.id, certificate, disable_notification=True)
-            await asyncio.sleep(2 * 60)
+            await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
+            mes1 = await bot.send_message(message.chat.id, 'У Вас есть 5 минут на скачивание cncrt.ipa файла')
+            await asyncio.sleep(5 * 60)
             await bot.delete_message(message.chat.id, kp_file.message_id)
+            await bot.delete_message(message.chat.id, mes1.message_id)
 
 
 @bot.message_handler(commands=['currency'])  # Курс Валют

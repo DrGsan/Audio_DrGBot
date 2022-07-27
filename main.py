@@ -49,11 +49,11 @@ async def new_year_msk_function():
         await bot.send_message(chat_id, text)
 
 
-def clean_disk():
+async def clean_disk():
     auto_clean_disk_files(YandexDisk, YA_DISK_TOKEN)
 
 
-def temp_clean():
+async def temp_clean():
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'temp/')
     try:
         shutil.rmtree(path)

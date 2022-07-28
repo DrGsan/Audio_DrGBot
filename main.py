@@ -546,12 +546,12 @@ async def handler_content_types(message):
             if message.json['new_chat_members'][0]['is_bot'] is False:
                 update_is_left(message, False)
                 await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-                await bot.send_message(message.chat.id, f'Добро пожаловать {message.new_chat_members[0].first_name}')
+                await bot.send_message(message.chat.id, f'Добро пожаловать, {message.new_chat_members[0].first_name}')
         elif message.content_type == 'left_chat_member':  # Реагирует на уведомление "покинул группу"
             if message.json['left_chat_member']['is_bot'] is False:
                 update_is_left(message, True)
                 await Apps().send_chat_action(bot, chat_id=message.chat.id)  # Уведомление Chat_Action
-                await bot.send_message(message.chat.id, f'До встречи {message.left_chat_member.first_name}.')
+                await bot.send_message(message.chat.id, f'До встречи, {message.left_chat_member.first_name}.')
         elif message.content_type == 'new_chat_title':
             await Apps().echo_voice(bot, message, 'title')  # Отправляет случайное сообщение из title.txt
         elif message.content_type == 'new_chat_photo':

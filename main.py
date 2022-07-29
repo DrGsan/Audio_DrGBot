@@ -220,7 +220,7 @@ async def result_send_audio_to_group(message):
 async def disk_command(message):
     work_with_db(message)  # Основная функция которая делает записи в DB
     if get_status(message) in [2, 4]:  # User, Admin (only Private)
-        zip_folder = f'temp/temp_disk_{message.from_user.id}'
+        zip_folder = f'temp/disk_{message.from_user.id}'
         zip_name = f"{Apps().current_date('%Y%m%d%H%M')}-{str(PassGen().pass_gen(length=6, method=['digits']))}"
         zip_password = PassGen().pass_gen(length=25, method=['lowercase', 'uppercase', 'digits'])
         zip_archive = ZipArchiver(folder=zip_folder, name=zip_name, password=zip_password).move_to_archive()
@@ -565,7 +565,7 @@ async def handler_content_types(message):
     elif message.from_user.is_bot is False and message.chat.type == 'private':
         if message.content_type == 'document':
             Apps().make_folder('temp/')
-            temp_path = f'temp/temp_disk_{message.from_user.id}'
+            temp_path = f'temp/disk_{message.from_user.id}'
             Apps().make_folder(temp_path)
 
             file_name = f'{temp_path}/{message.document.file_name}'
@@ -575,7 +575,8 @@ async def handler_content_types(message):
                 file = requests.get(f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}')
                 with open(file_name, 'wb') as f:
                     f.write(file.content)
-                await bot.send_message(message.chat.id, f'Файл "{message.document.file_name}" выгружен.')
+                await bot.send_message(message.chat.id, f'Файл "{message.document.file_name}" выгружен.',
+                                       disable_notification=True)
                 await asyncio.sleep(5)
                 await bot.delete_message(message.chat.id, message.message_id)
             else:
